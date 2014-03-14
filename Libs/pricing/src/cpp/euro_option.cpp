@@ -1,7 +1,8 @@
 #include <cmath>
 #include "euro_option.hpp"
 
-namespace QR {
+namespace QR 
+{
 
 EuroOption::EuroOption(const EuroOption& option_) 
 {
@@ -57,7 +58,7 @@ EuroOption::EuroOption(
 		r_)
 {}
 
-EuroOption::initialize()
+void EuroOption::init()
 {
 	
 	QL_REQUIRE(_K >= 0.0, "strike (" << _K << ") must be non-negative");
@@ -109,19 +110,26 @@ EuroOption::initialize()
 		}
 	}
 
+    double call = _S * _N_d1 - _K * std::exp(-_r * _T) * _N_d2;   
 	switch (_type) {
-	case Option::Call:
-		alpha_     =  cum_d1_;//  N(d1)
-		DalphaDd1_ =    n_d1_;//  n(d1)
-		beta_      = -cum_d2_;// -N(d2)
-		DbetaDd2_  = -  n_d2_;// -n(d2)
+	case Option::CALL :
+		_price     = call; 
+		_greeks.setDelta( _N_d1 );
+		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
+		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
+		_greeks.setTheta( -_S * _n_d1 * _sigma / ( 2*std::sqrt(_T) ) - _r * _K * std::exp(-_r*_T) * _N_d2 ); 
+		_greeks.setRho( _K * _T * std::exp(-_r*_T) * _N_d2 );  
 		break;
-	case Option::Put:
-		alpha_     = -1.0+cum_d1_;// -N(-d1)
-		DalphaDd1_ =        n_d1_;//  n( d1)
-		beta_      =  1.0-cum_d2_;//  N(-d2)
-		DbetaDd2_  =     -  n_d2_;// -n( d2)
+
+	case Option::PUT :
+		_price     = _K * std::exp(-_r*_T) - _S + call; 
+		_greeks.setDelta( _N_d1 - 1 );
+		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
+		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
+		_greeks.setTheta( -_S * _n_d1 * _sigma / ( 2*std::sqrt(_T) ) + _r * _K * std::exp(-_r*_T) * _N_d2 ); 
+		_greeks.setRho( -_K * _T * std::exp(-_r*_T) * (1-_N_d2) );  
 		break;
+
 	default:
 		QL_FAIL("invalid option type!");
 	}

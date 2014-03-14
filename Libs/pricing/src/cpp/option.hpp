@@ -9,7 +9,8 @@
 #include <ql/quantlib.hpp>
 #include "greeks.hpp"
 
-namespace QR {
+namespace QR 
+{
 
 class Option; 
 typedef boost::shared_ptr<Option> OptionPtr; 

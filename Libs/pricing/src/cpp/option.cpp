@@ -1,7 +1,8 @@
 
 #include "option.hpp"
 
-namespace QR {
+namespace QR 
+{
 
 Option::Option() :
 _dayCounter(QuantLib::Actual365Fixed()), 
