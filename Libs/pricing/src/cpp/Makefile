@@ -24,7 +24,7 @@ CFLAGS    = -fPIC -fpermissive -shared
 all: $(DBG_SODIR)/$(DBG_SONAME) $(REL_SODIR)/$(REL_SONAME)
 
 $(DBG_SODIR)/%.o: %.cpp 
-	$(CC) -c -o $@ $< $(DBU_CPPFLAGS)
+	$(CC) -c -o $@ $< $(DBG_CPPFLAGS)
  
 $(DBG_SODIR)/$(DBG_SONAME): $(DBG_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
