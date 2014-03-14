@@ -152,6 +152,10 @@ std::ostream& operator<<(std::ostream& out_, const EuroOption& option_)
     out_ << (Option)(option_);     
     out_ << "d1=" << option_.getd1() << std::endl; 
     out_ << "d2=" << option_.getd2() << std::endl; 
+    out_ << "N_d1=" << option_.getN_d1() << std::endl; 
+    out_ << "N_d2=" << option_.getN_d2() << std::endl; 
+    out_ << "n_d1=" << option_.getn_d1() << std::endl; 
+    out_ << "n_d2=" << option_.getn_d2() << std::endl; 
     return out_; 
 } 
 

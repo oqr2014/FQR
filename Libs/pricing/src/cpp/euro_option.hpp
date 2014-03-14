@@ -35,17 +35,17 @@ public:
 
 	double getd1() const { return _d1; }	
 	double getd2() const { return _d2; }
-	double getNd1() const { return _N_d1; }
-	double getNd2() const { return _N_d2; }
-	double getnd1() const { return _n_d1; }
-	double getnd2() const { return _n_d2; }
+	double getN_d1() const { return _N_d1; }
+	double getN_d2() const { return _N_d2; }
+	double getn_d1() const { return _n_d1; }
+	double getn_d2() const { return _n_d2; }
 	
 	void setd1(double d1_)    { _d1 = d1_; }
 	void setd2(double d2_)    { _d2 = d2_; }
-	void setNd1(double N_d1_) { _N_d1 = N_d1_; }
-	void setNd2(double N_d2_) { _N_d2 = N_d2_; }
-	void setnd1(double n_d1_) { _n_d1 = n_d1_; }
-	void setnd2(double n_d2_) { _n_d2 = n_d2_; }
+	void setN_d1(double N_d1_) { _N_d1 = N_d1_; }
+	void setN_d2(double N_d2_) { _N_d2 = N_d2_; }
+	void setn_d1(double n_d1_) { _n_d1 = n_d1_; }
+	void setn_d2(double n_d2_) { _n_d2 = n_d2_; }
 		
 	virtual void init(); 
 	virtual void calc(); 
