@@ -40,7 +40,9 @@ EuroOption::EuroOption(
 	    K_,
 		sigma_,
 		r_)
-{} 
+{ 
+	init(); 
+} 
 			
 EuroOption::EuroOption(
 		Type    type_,
@@ -56,7 +58,9 @@ EuroOption::EuroOption(
 		T_,
 		sigma_,
 		r_)
-{}
+{
+	init(); 
+}
 
 void EuroOption::init()
 {
@@ -65,7 +69,7 @@ void EuroOption::init()
 	QL_REQUIRE(_sigma >= 0.0, "sigma (" << _sigma << ") must be non-negative");
 
 	if (_sigma >= QL_EPSILON) {
-		if (close(_K, 0.0)) {
+		if (QuantLib::close(_K, 0.0)) {
 			_d1   = QL_MAX_REAL;
 			_d2   = QL_MAX_REAL;
 			_N_d1 = 1.0;
@@ -75,7 +79,7 @@ void EuroOption::init()
 		} 
 		else {
 			_d1 = (std::log(_S / _K) + (_r + 0.5 * _sigma * _sigma) * _T) / (_sigma * std::sqrt(_T));
-			_d2 = d1_ - _sigma * std::sqrt(_T);
+			_d2 = _d1 - _sigma * std::sqrt(_T);
 			QuantLib::CumulativeNormalDistribution cnd;
 			_N_d1 = cnd(_d1);
 			_N_d2 = cnd(_d2);
@@ -84,7 +88,7 @@ void EuroOption::init()
 		}
 	} 
 	else {  //vol = 0
-		if (close(_S, _K)) {
+		if (QuantLib::close(_S, _K)) {
 			_d1   = 0;
 			_d2   = 0;
 			_N_d1 = 0.5;
@@ -113,7 +117,7 @@ void EuroOption::init()
     double call = _S * _N_d1 - _K * std::exp(-_r * _T) * _N_d2;   
 	switch (_type) {
 	case Option::CALL :
-		_price     = call; 
+		_price = call; 
 		_greeks.setDelta( _N_d1 );
 		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
 		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
@@ -122,7 +126,7 @@ void EuroOption::init()
 		break;
 
 	case Option::PUT :
-		_price     = _K * std::exp(-_r*_T) - _S + call; 
+		_price = _K * std::exp(-_r*_T) - _S + call; 
 		_greeks.setDelta( _N_d1 - 1 );
 		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
 		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
@@ -133,8 +137,15 @@ void EuroOption::init()
 	default:
 		QL_FAIL("invalid option type!");
 	}
+	_initFlag = 1; 
 }
 
+void EuroOption::calc() 
+{
+	if ( _initFlag )	
+		return; 
+	init(); 
+}
 
 std::ostream& operator<<(std::ostream& out_, const EuroOption& option_)
 { 

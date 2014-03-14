@@ -48,10 +48,11 @@ public:
 	void setnd2(double n_d2_) { _n_d2 = n_d2_; }
 		
 	virtual void init(); 
+	virtual void calc(); 
 private: 
     double  _d1, _d2;  // intermediate results 
-	double  _N_d1, N_d2;  // N(d1), N(d2) 
-	double  _n_d1, n_d2;  // n(d1), n(d2) 
+	double  _N_d1, _N_d2;  // N(d1), N(d2) 
+	double  _n_d1, _n_d2;  // n(d1), n(d2) 
 }; 
 
 

@@ -45,7 +45,8 @@ public:
 
     virtual ~Option() {} 
     
-    virtual void initialize() {} 
+    virtual void init() {} 
+	virtual void calc() {} 
 
     std::string getTypeName() const; 
     Type getType() const { return _type; }  
@@ -57,7 +58,7 @@ public:
     double getVol() const { return _sigma; }
     double getRate() const { return _r; }
     QuantLib::DayCounter getDCC() const { return _dayCounter; }
-    int getIniFlag() const { return _iniFlag; }
+    int getInitFlag() const { return _initFlag; }
 	double getPrice() const { return _price; }
 	Greeks getGreeks() const { return _greeks; }
 
@@ -70,9 +71,9 @@ public:
     void setVol(double sigma_) { _sigma = sigma_; }
     void setRate(double r_) { _r = r_; }
     void setDCC(const QuantLib::DayCounter& dcc_) { _dayCounter = dcc_; }
-    void setIniFlag(int flag_) { _iniFlag = flag_; }
+    void setInitFlag(int flag_) { _initFlag = flag_; }
 	void setPrice(double price_) { _price = price_; }
-	void setGreeks(const Greeks& greeks_) { _greeks = greeks; }
+	void setGreeks(const Greeks& greeks_) { _greeks = greeks_; }
 
 protected: 
     Type  _type; 
@@ -84,7 +85,7 @@ protected:
     double  _sigma;    // Volatility 
     double  _r;        // Risk free rate 
     QuantLib::DayCounter _dayCounter; 
-    int     _iniFlag;
+    int     _initFlag;
 	double  _price;
     Greeks  _greeks; 
 }; 
