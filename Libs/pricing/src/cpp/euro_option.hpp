@@ -53,6 +53,7 @@ public:
 	virtual void calcVega(double pct_ = .005);
 	virtual void calcGamma(double pct_ = .005);
 	virtual void calcGreeksAnalytic(); 
+	virtual void calcImplVol(); 
 	virtual void calc(); 
 private: 
     double  _d1, _d2;  // intermediate results 

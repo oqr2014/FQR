@@ -145,8 +145,8 @@ void EuroOption::calcVega(double pct_)
 {
 	EuroOption option1 = *this; 
 	EuroOption option2 = *this; 
-	option1.setSigma( (1 - pct_) * _sigma );
-	option2.setSigma( (1 + pct_) * _sigma );
+	option1.setVol( (1 - pct_) * _sigma );
+	option2.setVol( (1 + pct_) * _sigma );
 	option1.calcPrice(); 
 	option2.calcPrice();
 	double vega = ( option2.getPrice() - option1.getPrice() ) / ( 2 * pct_ * _sigma ); 
@@ -200,7 +200,7 @@ void EuroOption::calc()
 	if ( !_initFlag )
 		init(); 
 	calcPrice(); 
-	calcGreeks(); 
+	calcGreeksAnalytic(); 
 }
 
 std::ostream& operator<<(std::ostream& out_, const EuroOption& option_)

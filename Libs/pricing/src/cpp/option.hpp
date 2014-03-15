@@ -51,7 +51,7 @@ public:
 	virtual void calcVega(double pct_) {}  
 	virtual void calcGamma(double pct_) {}  
 	virtual void calcGreeksAnalytic() {}  
-	virtual void calcImpVol() {} 
+	virtual void calcImplVol() {} 
 	virtual void calc() {} 
 
     std::string getTypeName() const; 
