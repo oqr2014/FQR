@@ -92,7 +92,7 @@ std::ostream& operator<<(std::ostream& out_, const Option& option_)
     out_ << "Volatility=" << option_.getVol() << std::endl; 
     out_ << "Rate=" << option_.getRate() << std::endl; 
     out_ << "DayCounter=" << option_.getDCC().name() << std::endl; 
-    out_ << "IniFlag=" << option_.getInitFlag() << std::endl; 
+    out_ << "InitFlag=" << option_.getInitFlag() << std::endl; 
     out_ << "Price=" << option_.getPrice() << std::endl; 
     out_ << "Greeks=" << option_.getGreeks() << std::endl; 
     return out_; 

@@ -40,9 +40,7 @@ EuroOption::EuroOption(
 	    K_,
 		sigma_,
 		r_)
-{ 
-	init(); 
-} 
+{} 
 			
 EuroOption::EuroOption(
 		Type    type_,
@@ -58,9 +56,7 @@ EuroOption::EuroOption(
 		T_,
 		sigma_,
 		r_)
-{
-	init(); 
-}
+{}
 
 void EuroOption::init()
 {
@@ -113,38 +109,98 @@ void EuroOption::init()
 			_n_d2 = 0.0;
 		}
 	}
+	_initFlag = 1; 
+} 
 
+void EuroOption::calcPrice() 
+{ 
+	if ( !_initFlag ) 
+		init(); 
     double call = _S * _N_d1 - _K * std::exp(-_r * _T) * _N_d2;   
 	switch (_type) {
 	case Option::CALL :
 		_price = call; 
+		break;
+	case Option::PUT :
+		_price = _K * std::exp(-_r*_T) - _S + call; 
+		break;
+	default:
+		QL_FAIL("invalid option type!");
+	}
+}
+
+void EuroOption::calcDelta(double pct_) 
+{
+	EuroOption option1 = *this; 
+	EuroOption option2 = *this; 
+	option1.setSpot( (1 - pct_) * _S );
+	option2.setSpot( (1 + pct_) * _S );
+	option1.calcPrice(); 
+	option2.calcPrice();
+	double delta = ( option2.getPrice() - option1.getPrice() ) / ( 2 * pct_ * _S ); 
+	_greeks.setDelta(delta); 
+}
+
+void EuroOption::calcVega(double pct_) 
+{
+	EuroOption option1 = *this; 
+	EuroOption option2 = *this; 
+	option1.setSigma( (1 - pct_) * _sigma );
+	option2.setSigma( (1 + pct_) * _sigma );
+	option1.calcPrice(); 
+	option2.calcPrice();
+	double vega = ( option2.getPrice() - option1.getPrice() ) / ( 2 * pct_ * _sigma ); 
+	_greeks.setVega(vega); 
+}
+
+void EuroOption::calcGamma(double pct_) 
+{
+	EuroOption option1 = *this; 
+	EuroOption option2 = *this; 
+	option1.setSpot( (1 - pct_) * _S );
+	option2.setSpot( (1 + pct_) * _S );
+	option1.calcPrice(); 
+	option2.calcPrice();
+	calcPrice(); 
+	double gamma = ( option2.getPrice() + option1.getPrice() + 2 * _price ) / ( pct_ * pct_ * _S * _S ); 
+	_greeks.setGamma(gamma); 
+}
+
+void EuroOption::calcGreeksAnalytic()
+{
+	if ( !_initFlag ) 
+		init(); 
+	switch (_type) {
+	case Option::CALL :
 		_greeks.setDelta( _N_d1 );
 		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
 		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
 		_greeks.setTheta( -_S * _n_d1 * _sigma / ( 2*std::sqrt(_T) ) - _r * _K * std::exp(-_r*_T) * _N_d2 ); 
 		_greeks.setRho( _K * _T * std::exp(-_r*_T) * _N_d2 );  
 		break;
-
 	case Option::PUT :
-		_price = _K * std::exp(-_r*_T) - _S + call; 
 		_greeks.setDelta( _N_d1 - 1 );
 		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
 		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
 		_greeks.setTheta( -_S * _n_d1 * _sigma / ( 2*std::sqrt(_T) ) + _r * _K * std::exp(-_r*_T) * _N_d2 ); 
 		_greeks.setRho( -_K * _T * std::exp(-_r*_T) * (1-_N_d2) );  
 		break;
-
 	default:
 		QL_FAIL("invalid option type!");
 	}
-	_initFlag = 1; 
+}
+
+void EuroOption::calcImplVol()
+{
+	
 }
 
 void EuroOption::calc() 
 {
-	if ( _initFlag )	
-		return; 
-	init(); 
+	if ( !_initFlag )
+		init(); 
+	calcPrice(); 
+	calcGreeks(); 
 }
 
 std::ostream& operator<<(std::ostream& out_, const EuroOption& option_)

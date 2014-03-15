@@ -48,6 +48,11 @@ public:
 	void setn_d2(double n_d2_) { _n_d2 = n_d2_; }
 		
 	virtual void init(); 
+	virtual void calcPrice(); 
+	virtual void calcDelta(double pct_ = .005);  //default to shake 0.5% 
+	virtual void calcVega(double pct_ = .005);
+	virtual void calcGamma(double pct_ = .005);
+	virtual void calcGreeksAnalytic(); 
 	virtual void calc(); 
 private: 
     double  _d1, _d2;  // intermediate results 
