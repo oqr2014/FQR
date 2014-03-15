@@ -162,27 +162,50 @@ void EuroOption::calcGamma(double pct_)
 	option1.calcPrice(); 
 	option2.calcPrice();
 	calcPrice(); 
-	double gamma = ( option2.getPrice() + option1.getPrice() + 2 * _price ) / ( pct_ * pct_ * _S * _S ); 
+	double gamma = ( option1.getPrice() + option2.getPrice() - 2 * _price ) / ( pct_ * _S * pct_ * _S ); 
 	_greeks.setGamma(gamma); 
+}
+
+void EuroOption::calcTheta(double pct_)
+{
+	EuroOption option1 = *this; 
+	EuroOption option2 = *this; 
+	option1.setT2M( (1 - pct_) * _T );
+	option2.setT2M( (1 + pct_) * _T );
+	option1.calcPrice(); 
+	option2.calcPrice();
+	double theta = ( option1.getPrice() - option2.getPrice() ) / ( 2 * pct_ * _T ); 
+	_greeks.setTheta(theta); 
+}
+
+void EuroOption::calcRho(double pct_)
+{
+	EuroOption option1 = *this; 
+	EuroOption option2 = *this; 
+	option1.setRate( (1 - pct_) * _r );
+	option2.setRate( (1 + pct_) * _r );
+	option1.calcPrice(); 
+	option2.calcPrice();
+	double rho = ( option2.getPrice() - option1.getPrice() ) / ( 2 * pct_ * _r ); 
+	_greeks.setRho(rho); 
 }
 
 void EuroOption::calcGreeksAnalytic()
 {
 	if ( !_initFlag ) 
 		init(); 
+
+	_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
+	_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
 	switch (_type) {
 	case Option::CALL :
 		_greeks.setDelta( _N_d1 );
-		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
-		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
 		_greeks.setTheta( -_S * _n_d1 * _sigma / ( 2*std::sqrt(_T) ) - _r * _K * std::exp(-_r*_T) * _N_d2 ); 
 		_greeks.setRho( _K * _T * std::exp(-_r*_T) * _N_d2 );  
 		break;
 	case Option::PUT :
 		_greeks.setDelta( _N_d1 - 1 );
-		_greeks.setVega( _S * _n_d1 * std::sqrt(_T) );
-		_greeks.setGamma( _n_d1 / (_S * _sigma * std::sqrt(_T)) ); 
-		_greeks.setTheta( -_S * _n_d1 * _sigma / ( 2*std::sqrt(_T) ) + _r * _K * std::exp(-_r*_T) * _N_d2 ); 
+		_greeks.setTheta( -_S * _n_d1 * _sigma / ( 2*std::sqrt(_T) ) + _r * _K * std::exp(-_r*_T) * (1-_N_d2) ); 
 		_greeks.setRho( -_K * _T * std::exp(-_r*_T) * (1-_N_d2) );  
 		break;
 	default:

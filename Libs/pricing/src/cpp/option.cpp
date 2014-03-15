@@ -19,6 +19,7 @@ Option& Option::operator=(const Option& option_)
 {
     if (this == &option_) 
         return *this;  
+	_type         = option_._type; 
     _valueDate    = option_._valueDate; 
     _maturityDate = option_._maturityDate;  
     _S            = option_._S; 
@@ -88,7 +89,7 @@ std::ostream& operator<<(std::ostream& out_, const Option& option_)
     out_ << "ValueDate=" << option_.getValueDate() << std::endl; 
     out_ << "MaturityDate=" << option_.getMaturityDate() << std::endl; 
     out_ << "Spot=" << option_.getSpot() << std::endl; 
-    out_ << "Time2Maturity=" << option_.getTime2Maturity() << std::endl; 
+    out_ << "T2M=" << option_.getT2M() << std::endl; 
     out_ << "Volatility=" << option_.getVol() << std::endl; 
     out_ << "Rate=" << option_.getRate() << std::endl; 
     out_ << "DayCounter=" << option_.getDCC().name() << std::endl; 
@@ -99,5 +100,4 @@ std::ostream& operator<<(std::ostream& out_, const Option& option_)
 }
 
 }
-
 

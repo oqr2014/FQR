@@ -50,6 +50,8 @@ public:
 	virtual void calcDelta(double pct_) {}  
 	virtual void calcVega(double pct_) {}  
 	virtual void calcGamma(double pct_) {}  
+	virtual void calcTheta(double pct_) {}  
+	virtual void calcRho(double pct_) {}  
 	virtual void calcGreeksAnalytic() {}  
 	virtual void calcImplVol() {} 
 	virtual void calc() {} 
@@ -60,7 +62,7 @@ public:
     QuantLib::Date getMaturityDate() const { return _maturityDate; }
     double getSpot() const { return _S; }
     double getStrike() const { return _K; }
-    double getTime2Maturity() const { return _T; }
+    double getT2M() const { return _T; }
     double getVol() const { return _sigma; }
     double getRate() const { return _r; }
     QuantLib::DayCounter getDCC() const { return _dayCounter; }
@@ -73,7 +75,7 @@ public:
     void setMaturityDate(const QuantLib::Date& date_) { _maturityDate = date_; _initFlag = 0; }
     void setSpot(double S_) { _S = S_; _initFlag = 0; }
     void setStrike(double K_) { _K = K_; _initFlag = 0; }
-    void setTime2Maturity(double T_) { _T = T_; _initFlag = 0; }
+    void setT2M(double T_) { _T = T_; _initFlag = 0; }
     void setVol(double sigma_) { _sigma = sigma_; _initFlag = 0; }
     void setRate(double r_) { _r = r_; _initFlag = 0; }
     void setDCC(const QuantLib::DayCounter& dcc_) { _dayCounter = dcc_; _initFlag = 0; }
