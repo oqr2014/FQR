@@ -27,6 +27,7 @@ Option& Option::operator=(const Option& option_)
     _T            = option_._T; 
     _sigma        = option_._sigma; 
     _r            = option_._r; 
+    _q            = option_._q; 
     _dayCounter   = option_._dayCounter; 
     _initFlag     = option_._initFlag;    
 	_price        = option_._price; 
@@ -42,7 +43,8 @@ Option::Option(
     double  S_, 
     double  K_,
     double  sigma_, 
-    double  r_) :   
+    double  r_,
+	double  q_) :   
     _type(type_),  
     _valueDate(valueDate_),  
     _maturityDate(maturityDate_),  
@@ -50,6 +52,7 @@ Option::Option(
     _K(K_),  
     _sigma(sigma_),  
     _r(r_),
+    _q(q_),
     _dayCounter(QuantLib::Actual365Fixed()), 
     _initFlag(0) 
 {
@@ -63,13 +66,15 @@ Option::Option(
     double  K_,
     double  T_, 
     double  sigma_, 
-    double  r_) :
+    double  r_,
+	double  q_) :
     _type(type_),  
     _S(S_),  
     _K(K_),  
     _T(T_),  
     _sigma(sigma_),  
     _r(r_),      
+    _q(q_),
     _dayCounter(QuantLib::Actual365Fixed()), 
     _initFlag(0) {}
     
@@ -91,7 +96,8 @@ std::ostream& operator<<(std::ostream& out_, const Option& option_)
     out_ << "Spot=" << option_.getSpot() << std::endl; 
     out_ << "T2M=" << option_.getT2M() << std::endl; 
     out_ << "Volatility=" << option_.getVol() << std::endl; 
-    out_ << "Rate=" << option_.getRate() << std::endl; 
+    out_ << "Risk free rate=" << option_.getRate() << std::endl; 
+    out_ << "Dividend yield=" << option_.getDivYield() << std::endl; 
     out_ << "DayCounter=" << option_.getDCC().name() << std::endl; 
     out_ << "InitFlag=" << option_.getInitFlag() << std::endl; 
     out_ << "Price=" << option_.getPrice() << std::endl; 

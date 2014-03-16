@@ -31,7 +31,8 @@ EuroOption::EuroOption(
 		double  S_,
 		double  K_,
 		double  sigma_,
-		double  r_) : 
+		double  r_,
+		double  q_) : 
 	Option(
 		type_,
 		valueDate_,
@@ -39,7 +40,8 @@ EuroOption::EuroOption(
 		S_,
 	    K_,
 		sigma_,
-		r_)
+		r_, 
+		q_)
 {} 
 			
 EuroOption::EuroOption(
@@ -48,14 +50,16 @@ EuroOption::EuroOption(
 		double  K_,
 		double  T_,
 		double  sigma_,
-		double  r_) :
+		double  r_,
+		double  q_) :
 	Option(
 		type_,
 		S_,
 	    K_,
 		T_,
 		sigma_,
-		r_)
+		r_, 
+		q_)
 {}
 
 void EuroOption::init()

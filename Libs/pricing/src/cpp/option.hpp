@@ -33,7 +33,8 @@ public:
         double  S_, 
         double  K_,
         double  sigma_, 
-        double  r_);
+        double  r_, 
+		double  q_);
  
     Option(
         Type    type_, 
@@ -41,7 +42,8 @@ public:
         double  K_,
 	    double  T_, 
         double  sigma_, 
-        double  r_);
+        double  r_,
+		double  q_);
 
     virtual ~Option() {} 
     
@@ -65,6 +67,7 @@ public:
     double getT2M() const { return _T; }
     double getVol() const { return _sigma; }
     double getRate() const { return _r; }
+    double getDivYield() const { return _q; }
     QuantLib::DayCounter getDCC() const { return _dayCounter; }
     int getInitFlag() const { return _initFlag; }
 	double getPrice() const { return _price; }
@@ -78,6 +81,7 @@ public:
     void setT2M(double T_) { _T = T_; _initFlag = 0; }
     void setVol(double sigma_) { _sigma = sigma_; _initFlag = 0; }
     void setRate(double r_) { _r = r_; _initFlag = 0; }
+    void setDivYield(double q_) { _q = q_; _initFlag = 0; }
     void setDCC(const QuantLib::DayCounter& dcc_) { _dayCounter = dcc_; _initFlag = 0; }
     void setInitFlag(int flag_) { _initFlag = flag_; _initFlag = 0; }
 	void setPrice(double price_) { _price = price_; _initFlag = 0; }
@@ -89,9 +93,10 @@ protected:
     QuantLib::Date  _maturityDate;     
     double  _S;        // Underlying price 
     double  _K;        // Strike 
-    double  _T;        // year fraction to maturity 
+    double  _T;        // year fraction of time to maturity 
     double  _sigma;    // Volatility 
     double  _r;        // Risk free rate 
+    double  _q;        // Dividend yield, not used so far 
     QuantLib::DayCounter _dayCounter; 
     int     _initFlag;
 	double  _price;

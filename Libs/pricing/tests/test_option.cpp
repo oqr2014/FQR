@@ -17,6 +17,7 @@ int main(int argc, const char* argv[])
 		40,
 		1., 
 		.2, 
+		.06, 
 		.06); 
 	option.calc(); 
 	std::cout << "option: " << option << std::endl; 	

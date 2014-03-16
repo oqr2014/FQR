@@ -23,7 +23,8 @@ public:
 		double  S_,
 		double  K_,
 		double  sigma_,
-		double  r_); 
+		double  r_, 
+		double  q_); 
 			
     EuroOption(
 		Type    type_,
@@ -31,7 +32,8 @@ public:
 		double  K_,
 		double  T_,
 		double  sigma_,
-		double  r_);
+		double  r_, 
+		double  q_);
 
 	double getd1() const { return _d1; }	
 	double getd2() const { return _d2; }
