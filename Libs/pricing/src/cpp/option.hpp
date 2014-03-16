@@ -46,17 +46,18 @@ public:
 		double  q_);
 
     virtual ~Option() {} 
-    
+    virtual Option* clone() const { return new Option(*this); } 
+
     virtual void init() {} 
-	virtual void calcPrice() {}
+	virtual void calcPrice() {} 
 	virtual void calcDelta(double pct_) {}  
 	virtual void calcVega(double pct_) {}  
 	virtual void calcGamma(double pct_) {}  
 	virtual void calcTheta(double pct_) {}  
 	virtual void calcRho(double pct_) {}  
 	virtual void calcGreeksAnalytic() {}  
-	virtual void calcImplVol() {} 
 	virtual void calc() {} 
+	virtual double calcImplVol(double price_); 
 
     std::string getTypeName() const; 
     Type getType() const { return _type; }  
@@ -104,6 +105,19 @@ protected:
 }; 
 
 std::ostream& operator<<(std::ostream& out_, const Option& option_); 
+
+class FunctorImplVol {
+public:
+	explicit FunctorImplVol(const Option* optionPtr_, double price_) :
+	_optionPtr(optionPtr_), _price(price_)
+	{}
+
+	double operator() (double vol_) const; 
+
+private:
+	const Option*	_optionPtr;
+	double			_price;
+};
 
 
 }

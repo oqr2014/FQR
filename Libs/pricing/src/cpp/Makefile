@@ -31,6 +31,7 @@ $(DBG_SODIR)/%.o: %.cpp
 $(DBG_SODIR)/$(DBG_SONAME): $(DBG_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 	cp -avf $(DBG_SODIR)/$(DBG_SONAME) /usr/local/lib/
+	cp -avf *.hpp /usr/local/include/oqr/pricing/
 
 $(REL_SODIR)/%.o: %.cpp 
 	$(CC) -c -o $@ $< $(REL_CPPFLAGS)

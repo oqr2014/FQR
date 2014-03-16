@@ -8,12 +8,10 @@ Option::Option() :
 _dayCounter(QuantLib::Actual365Fixed()), 
 _initFlag(0) {} 
 
-
 Option::Option(const Option& option_) 
 {
     *this = option_; 
 } 
-
 
 Option& Option::operator=(const Option& option_) 
 {
@@ -34,7 +32,6 @@ Option& Option::operator=(const Option& option_)
 	_greeks       = option_._greeks; 
     return *this; 
 } 
-
 
 Option::Option(
     Type type_, 
@@ -59,7 +56,6 @@ Option::Option(
 	_T = _dayCounter.yearFraction(_valueDate, _maturityDate);
 }  
 
- 
 Option::Option(
     Type    type_, 
     double  S_, 
@@ -78,7 +74,6 @@ Option::Option(
     _dayCounter(QuantLib::Actual365Fixed()), 
     _initFlag(0) {}
     
-
 std::string Option::getTypeName() const 
 {
     if (_type == PUT) 
@@ -87,13 +82,29 @@ std::string Option::getTypeName() const
         return std::string("CALL");  
 }
 
-   
+double Option::calcImplVol(double price_) 
+{
+	QuantLib::Bisection bisection; 
+	double accuracy = 1.e-6;
+	double guess = 0.15; 
+	double xmin = 1.e-5; 
+	double xmax = 5.; 
+	double impl_vol = bisection.solve(
+					FunctorImplVol(this, price_), 
+					accuracy, 
+					guess, 
+					xmin, 
+					xmax); 
+	return impl_vol; 
+}
+
 std::ostream& operator<<(std::ostream& out_, const Option& option_) 
 {
     out_ << "Type=" << option_.getTypeName() << std::endl; 
     out_ << "ValueDate=" << option_.getValueDate() << std::endl; 
     out_ << "MaturityDate=" << option_.getMaturityDate() << std::endl; 
     out_ << "Spot=" << option_.getSpot() << std::endl; 
+    out_ << "Strike=" << option_.getStrike() << std::endl; 
     out_ << "T2M=" << option_.getT2M() << std::endl; 
     out_ << "Volatility=" << option_.getVol() << std::endl; 
     out_ << "Risk free rate=" << option_.getRate() << std::endl; 
@@ -103,6 +114,16 @@ std::ostream& operator<<(std::ostream& out_, const Option& option_)
     out_ << "Price=" << option_.getPrice() << std::endl; 
     out_ << "Greeks=" << option_.getGreeks() << std::endl; 
     return out_; 
+}
+
+double FunctorImplVol::operator() (double vol_) const 
+{
+	double f;
+	OptionPtr optPtr(_optionPtr->clone());
+	optPtr->setVol(vol_);
+	optPtr->calcPrice();
+	f = optPtr->getPrice() - _price;
+	return f;
 }
 
 }

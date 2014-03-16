@@ -217,11 +217,6 @@ void EuroOption::calcGreeksAnalytic()
 	}
 }
 
-void EuroOption::calcImplVol()
-{
-	
-}
-
 void EuroOption::calc() 
 {
 	if ( !_initFlag )

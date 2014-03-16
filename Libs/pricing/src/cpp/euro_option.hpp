@@ -35,6 +35,10 @@ public:
 		double  r_, 
 		double  q_);
 
+	virtual ~EuroOption() {} 
+//	virtual EuroOptionPtr clone() const { return EuroOptionPtr(new EuroOption(*this)); }
+	virtual EuroOption* clone() const { return new EuroOption(*this); }
+	 
 	double getd1() const { return _d1; }	
 	double getd2() const { return _d2; }
 	double getN_d1() const { return _N_d1; }
@@ -57,8 +61,8 @@ public:
 	virtual void calcTheta(double pct_ = .005);
 	virtual void calcRho(double pct_ = .005);
 	virtual void calcGreeksAnalytic(); 
-	virtual void calcImplVol(); 
 	virtual void calc(); 
+
 private: 
     double  _d1, _d2;  // intermediate results 
 	double  _N_d1, _N_d2;  // N(d1), N(d2) 
