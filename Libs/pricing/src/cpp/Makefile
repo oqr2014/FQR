@@ -37,7 +37,7 @@ $(REL_SODIR)/%.o: %.cpp
 
 $(REL_SODIR)/$(REL_SONAME): $(REL_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
-	cp -avf $(DBG_SODIR)/$(DBG_SONAME) /usr/local/lib/
+	cp -avf $(REL_SODIR)/$(REL_SONAME) /usr/local/lib/
 
 clean:
 	rm -f $(DBG_SODIR)/*.o $(DBG_SODIR)/*.so 
