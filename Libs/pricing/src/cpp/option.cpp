@@ -118,11 +118,10 @@ std::ostream& operator<<(std::ostream& out_, const Option& option_)
 
 double FunctorImplVol::operator() (double vol_) const 
 {
-	double f;
 	OptionPtr optPtr(_optionPtr->clone());
 	optPtr->setVol(vol_);
 	optPtr->calcPrice();
-	f = optPtr->getPrice() - _price;
+	double f = optPtr->getPrice() - _price;
 	return f;
 }
 
