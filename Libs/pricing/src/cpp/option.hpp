@@ -12,6 +12,7 @@
 namespace QR 
 {
 
+const double PCT_CHANGE_GREEKS = 0.001; 
 class Option; 
 typedef boost::shared_ptr<Option> OptionPtr; 
 
@@ -50,11 +51,11 @@ public:
 
     virtual void init() {} 
 	virtual void calcPrice() {} 
-	virtual void calcDelta(double pct_) {}  
-	virtual void calcVega(double pct_) {}  
-	virtual void calcGamma(double pct_) {}  
-	virtual void calcTheta(double pct_) {}  
-	virtual void calcRho(double pct_) {}  
+	virtual void calcDelta(double pct_ = PCT_CHANGE_GREEKS);  
+	virtual void calcVega(double pct_ = PCT_CHANGE_GREEKS);   
+	virtual void calcGamma(double pct_ = PCT_CHANGE_GREEKS); 
+	virtual void calcTheta(double pct_ = PCT_CHANGE_GREEKS);  
+	virtual void calcRho(double pct_ = PCT_CHANGE_GREEKS); 
 	virtual void calcGreeksAnalytic() {}  
 	virtual void calc() {} 
 	virtual double calcImplVol(double price_); 

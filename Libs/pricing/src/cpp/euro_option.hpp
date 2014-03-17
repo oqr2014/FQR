@@ -55,11 +55,6 @@ public:
 		
 	virtual void init(); 
 	virtual void calcPrice(); 
-	virtual void calcDelta(double pct_ = .005);  //default to shake 0.5% 
-	virtual void calcVega(double pct_ = .005);
-	virtual void calcGamma(double pct_ = .005);
-	virtual void calcTheta(double pct_ = .005);
-	virtual void calcRho(double pct_ = .005);
 	virtual void calcGreeksAnalytic(); 
 	virtual void calc(); 
 

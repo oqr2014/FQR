@@ -82,6 +82,67 @@ std::string Option::getTypeName() const
         return std::string("CALL");  
 }
 
+void Option::calcDelta(double pct_) 
+{
+	OptionPtr option1(this->clone());
+	OptionPtr option2(this->clone());
+	option1->setSpot( (1 - pct_) * _S );
+	option2->setSpot( (1 + pct_) * _S );
+	option1->calcPrice(); 
+	option2->calcPrice();
+	double delta = ( option2->getPrice() - option1->getPrice() ) / ( 2 * pct_ * _S ); 
+	_greeks.setDelta(delta); 
+}
+
+void Option::calcVega(double pct_) 
+{
+	OptionPtr option1(this->clone());
+	OptionPtr option2(this->clone());
+	option1->setVol( (1 - pct_) * _sigma );
+	option2->setVol( (1 + pct_) * _sigma );
+	option1->calcPrice(); 
+	option2->calcPrice();
+	double vega = ( option2->getPrice() - option1->getPrice() ) / ( 2 * pct_ * _sigma ); 
+	_greeks.setVega(vega); 
+}
+
+void Option::calcGamma(double pct_) 
+{
+	OptionPtr option1(this->clone());
+	OptionPtr option2(this->clone());
+	option1->setSpot( (1 - pct_) * _S );
+	option2->setSpot( (1 + pct_) * _S );
+	option1->calcPrice(); 
+	option2->calcPrice();
+	calcPrice(); 
+	double gamma = ( option1->getPrice() + option2->getPrice() - 2 * _price ) / ( pct_ * _S * pct_ * _S ); 
+	_greeks.setGamma(gamma); 
+}
+
+void Option::calcTheta(double pct_)
+{
+	OptionPtr option1(this->clone());
+	OptionPtr option2(this->clone());
+	option1->setT2M( (1 - pct_) * _T );
+	option2->setT2M( (1 + pct_) * _T );
+	option1->calcPrice(); 
+	option2->calcPrice();
+	double theta = ( option1->getPrice() - option2->getPrice() ) / ( 2 * pct_ * _T ); 
+	_greeks.setTheta(theta); 
+}
+
+void Option::calcRho(double pct_)
+{
+	OptionPtr option1(this->clone());
+	OptionPtr option2(this->clone());
+	option1->setRate( (1 - pct_) * _r );
+	option2->setRate( (1 + pct_) * _r );
+	option1->calcPrice(); 
+	option2->calcPrice();
+	double rho = ( option2->getPrice() - option1->getPrice() ) / ( 2 * pct_ * _r ); 
+	_greeks.setRho(rho); 
+}
+
 double Option::calcImplVol(double price_) 
 {
 	QuantLib::Bisection bisection; 

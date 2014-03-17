@@ -9,6 +9,7 @@ DBG_OBJS      = \
 	$(DBG_SODIR)/euro_option.o \
 	$(DBG_SODIR)/greeks.o  \
 	$(DBG_SODIR)/utility.o \
+	$(DBG_SODIR)/am_option.o \
 
 REL_SODIR     = ./release
 REL_SONAME    = liboqr.so  
@@ -17,6 +18,7 @@ REL_OBJS      = \
 	$(REL_SODIR)/euro_option.o \
 	$(REL_SODIR)/greeks.o  \
 	$(REL_SODIR)/utility.o \
+	$(REL_SODIR)/am_option.o \
 
 INC       = -I/usr/local/boost_1_53_0/include/boost-1_53
 DBG_CPPFLAGS  = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
