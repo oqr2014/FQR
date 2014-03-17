@@ -148,7 +148,7 @@ double Option::calcImplVol(double price_)
 	QuantLib::Bisection bisection; 
 	double accuracy = 1.e-6;
 	double guess = 0.15; 
-	double xmin = 1.e-5; 
+	double xmin = .01; 
 	double xmax = 5.; 
 	double impl_vol = bisection.solve(
 					FunctorImplVol(this, price_), 

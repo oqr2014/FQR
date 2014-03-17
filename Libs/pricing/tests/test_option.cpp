@@ -21,7 +21,7 @@ int main(int argc, const char* argv[])
 		.06, //r 
 		.06); //q 
 	euro_option.calc(); 
-	std::cout << "option: " << euro_option << std::endl; 	
+	std::cout << "European option: " << euro_option << std::endl; 	
 	euro_option.calcDelta(); 
 	euro_option.calcVega(); 
 	euro_option.calcGamma(); 
@@ -36,6 +36,7 @@ int main(int argc, const char* argv[])
 	double price = 5.277;  
 	std::cout << "Implied Vol for price(" << price << ")=" << euro_option.calcImplVol(price) << std::endl; 
 
+	std::cout << "======================================================================" <<std::endl; 
 	QR::AmOption am_option(
 		QR::Option::PUT,
 		36,  //spot
@@ -45,6 +46,19 @@ int main(int argc, const char* argv[])
 		.06, //r 
 		.06); //q 
 	am_option.calcPrice(); 
+	std::cout << "American option: " << am_option << std::endl; 	
 	std::cout << "American option price="<< am_option.getPrice() << std::endl; 
+	am_option.calcDelta(); 
+	am_option.calcVega(); 
+	am_option.calcGamma(); 
+	am_option.calcTheta(); 
+	am_option.calcRho(); 
+	std::cout << "Numerical calculations of the greeks: " << std::endl; 
+	std::cout << "delta=" << am_option.getGreeks().getDelta() << std::endl; 
+	std::cout << "vega=" << am_option.getGreeks().getVega() << std::endl; 
+	std::cout << "gamma=" << am_option.getGreeks().getGamma() << std::endl; 
+	std::cout << "theta=" << am_option.getGreeks().getTheta() << std::endl; 
+	std::cout << "rho=" << am_option.getGreeks().getRho() << std::endl;
+	std::cout << "Implied Vol for price(" << price << ")=" << am_option.calcImplVol(price) << std::endl; 
 	return 0; 
 }
