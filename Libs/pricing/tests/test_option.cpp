@@ -15,6 +15,7 @@ public:
 private: 
 	EuroOption::Style   _style;
 	EuroOption::Type	_type; 
+	bool				_bT2M; 
 	QuantLib::Date      _valueDate; 
 	QuantLib::Date      _maturityDate; 
 	double				_S; 
@@ -29,26 +30,40 @@ private:
 int TestOption::readInput() 
 {
 	while ( !_ifs.eof() ) { 
-		std::string style; 
-		_ifs >> style;  
-		if ('#' != style[0]) {
-			if ( style == "EUROPEAN" || style == "EURO")
-				_style = Option::EUROPEAN; 
-			else
-				_style = Option::AMERICAN; 
-			break; 
+		char c = _ifs.peek(); 
+		if ('#' == c) {
+			// skip comment line starting with '#'
+			_ifs.ignore(1024, '\n');
 		}
-		// skip comment line starting with '#'
-		_ifs.ignore(1024, '\n');
+		else
+			break; 
 	}
 	if (_ifs.eof()) 
 		return -1; 
+// peek a line 
+	std::streampos sp = _ifs.tellg(); 
+	std::string line; 
+	std::getline(_ifs, line); 
+	_ifs.seekg(sp); 
+	std::size_t found = line.find("/");
+	_bT2M = true; 
+	if (found != std::string::npos)
+		_bT2M = false; 
+
+	std::string style; 
+	_ifs >> style; 
+	_style = ( style=="EUROPEAN" || style=="EURO") ? Option::EUROPEAN : Option::AMERICAN; 
 	std::string type; 
 	_ifs >> type; 
 	_type = (type == "CALL") ? Option::CALL : Option::PUT;
+	if( !_bT2M ) {
+		_ifs >> _valueDate; 
+		_ifs >> _maturityDate; 
+	}
 	_ifs >> _S; 
 	_ifs >> _K; 
-	_ifs >> _T; 
+	if ( _bT2M ) 
+		_ifs >> _T; 
 	_ifs >> _sigma; 
 	_ifs >> _r; 
 	_ifs >> _q; 
@@ -67,24 +82,16 @@ void TestOption::operator()(void)
 	std::cout << "test option ..." << std::endl;
 	OptionPtr optionPtr; 
 	if (_style == Option::EUROPEAN) {
-		optionPtr = OptionPtr( new EuroOption(
-					_type,
-					_S,
-					_K,
-					_T,
-					_sigma,
-					_r,
-					_q) );
+		if ( _bT2M )
+			optionPtr = OptionPtr( new EuroOption( _type, _S, _K, _T, _sigma, _r, _q) );
+		else
+			optionPtr = OptionPtr( new EuroOption( _type, _valueDate, _maturityDate, _S, _K, _sigma, _r, _q) );
 	} 
 	else {
-		optionPtr = OptionPtr( new AmOption( 
-					_type,
-					_S,
-					_K,
-					_T,
-					_sigma,
-					_r,
-					_q) );
+		if ( _bT2M )
+			optionPtr = OptionPtr( new AmOption( _type, _S, _K, _T, _sigma, _r, _q) );
+		else
+			optionPtr = OptionPtr( new AmOption( _type, _valueDate, _maturityDate, _S, _K, _sigma, _r, _q) );
 	}
 
 	optionPtr->calcPrice(); 
@@ -115,4 +122,3 @@ int main(int argc, const char* argv[])
 	return 0; 
 }
 
- 

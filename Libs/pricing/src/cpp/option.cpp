@@ -159,9 +159,9 @@ void Option::calcRho(double pct_)
 double Option::calcImplVol(double price_) 
 {
 	QuantLib::Bisection bisection; 
-	double accuracy = 1.e-6;
+	double accuracy = 1.e-5;
 	double guess = 0.15; 
-	double xmin = .01; 
+	double xmin = .015;  //.01 is too small, which causes out of boundary. 
 	double xmax = 5.; 
 	double impl_vol = bisection.solve(
 					FunctorImplVol(this, price_), 

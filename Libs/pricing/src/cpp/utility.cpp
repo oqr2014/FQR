@@ -54,7 +54,7 @@ QuantLib::Date Utility::string2Date(const std::string &str_)
 		return QuantLib::Date(); 
 	size_t loc = str.find("/");
 	if (loc != std::string::npos) {
-		size_t loc2 = str.find("/");
+		size_t loc2 = str.find("/", loc+1);
 		if (loc2 == std::string::npos) 
 			return QuantLib::Date(); 
 		int month = std::atoi(str.substr(0, loc).c_str()); 
@@ -69,7 +69,7 @@ QuantLib::Date Utility::string2Date(const std::string &str_)
 }
 
 std::istream& operator>>(std::istream& in_, QuantLib::Date& date_)
-{ // format: year/month/day e.g. 2014/03/14
+{ // format: month/day/year e.g. 03/17/2014
 	int day, month, year; 
 	std::string str; 
 	in_ >> str; 

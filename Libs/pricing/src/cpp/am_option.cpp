@@ -155,7 +155,7 @@ void AmOption::calcPrice()
 	} 
 	// early exercise may be optimal for PUT 
 	QuantLib::CumulativeNormalDistribution cumNormalDist;
-	double tolerance = 1e-6;
+	double tolerance = 1e-5;
 	double Sk = criticalPrice(tolerance);
 	double riskFreeDF = std::exp(-_r * _T); 
 	double forwardSk = Sk / riskFreeDF;
