@@ -11,6 +11,7 @@ public:
 	TestOption(const std::string& testName_) : TestFunctor(testName_) {}
 	virtual int readInput(); 
 	virtual void operator()(void); 
+	virtual void writeOutHeader(); 
 private: 
 	EuroOption::Style   _style;
 	EuroOption::Type	_type; 
@@ -22,6 +23,7 @@ private:
 	double				_sigma; 
 	double				_r; 
 	double				_q;		
+	double				_price_implVol; 
 }; 
 
 int TestOption::readInput() 
@@ -50,13 +52,19 @@ int TestOption::readInput()
 	_ifs >> _sigma; 
 	_ifs >> _r; 
 	_ifs >> _q; 
+	_ifs >> _price_implVol; 
 	_ifs.ignore(1024, '\n'); 
 	return 0; 
 }
 
+void TestOption::writeOutHeader() 
+{
+	_ofs << "#Style\tType\tPrice\tDelta\tVega\tGamma\tTheta\tRho\tImplVol(price)" << std::endl; 
+}
+
 void TestOption::operator()(void)
 {
-	std::cout << "test european option ..." << std::endl;
+	std::cout << "test option ..." << std::endl;
 	OptionPtr optionPtr; 
 	if (_style == Option::EUROPEAN) {
 		optionPtr = OptionPtr( new EuroOption(
@@ -79,24 +87,27 @@ void TestOption::operator()(void)
 					_q) );
 	}
 
-	optionPtr->calc(); 
-	_ofs << "European option: " << *optionPtr << std::endl; 	
+	optionPtr->calcPrice(); 
 	optionPtr->calcDelta(); 
 	optionPtr->calcVega(); 
 	optionPtr->calcGamma(); 
 	optionPtr->calcTheta(); 
 	optionPtr->calcRho(); 
-	_ofs << "Numerical calculations of the greeks: " << std::endl; 
-	_ofs << "delta=" << optionPtr->getGreeks().getDelta() << std::endl; 
-	_ofs << "vega="  << optionPtr->getGreeks().getVega()  << std::endl; 
-	_ofs << "gamma=" << optionPtr->getGreeks().getGamma() << std::endl; 
-	_ofs << "theta=" << optionPtr->getGreeks().getTheta() << std::endl; 
-	_ofs << "rho="   << optionPtr->getGreeks().getRho()   << std::endl;
-	double price = 5.277;  
-	_ofs << "Implied Vol for price(" << price << ")=" << optionPtr->calcImplVol(price) << std::endl; 	
+	double implVol = optionPtr->calcImplVol(_price_implVol); 
+	_ofs << optionPtr->getStyleName() 
+		<< "\t" << optionPtr->getTypeName()  
+		<< "\t" << optionPtr->getPrice()  
+		<< "\t" << optionPtr->getGreeks().getDelta() 
+		<< "\t" << optionPtr->getGreeks().getVega() 
+		<< "\t" << optionPtr->getGreeks().getGamma()
+		<< "\t" << optionPtr->getGreeks().getTheta()
+		<< "\t" << optionPtr->getGreeks().getRho() 
+		<< "\t" << implVol << std::endl; 	
 }
 
 } 
+
+
 int main(int argc, const char* argv[])
 {
 	QR::TestOption test_option("TestOption");

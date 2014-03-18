@@ -20,6 +20,7 @@ public:
 				const std::string& outFile_);  
 	virtual ~TestFunctor() {}
 	virtual int readInput() = 0; 
+	virtual void writeOutHeader() {}
 	virtual void operator() (void) = 0; 
 	virtual void test();  
 		
@@ -41,8 +42,8 @@ protected:
 	std::string		_inFile; 
 	std::string		_outPath;
 	std::string		_outFile;   
-	std::ifstream   _ifs; 
-	std::ofstream   _ofs; 
+	std::ifstream	_ifs; 
+	std::ofstream	_ofs; 
 
 };  
 

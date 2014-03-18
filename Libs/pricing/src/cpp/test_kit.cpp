@@ -40,7 +40,8 @@ void TestFunctor::test()
 		std::cout << errMsg << std::endl; 
 		throw QRException(errMsg); 
 	}
-	
+
+	writeOutHeader(); 	
 //test in a loop 
 	while(!_ifs.eof()) {
 		try {
