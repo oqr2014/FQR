@@ -29,6 +29,7 @@ AmOption::AmOption(
 		double  r_,
 		double  q_) : 
 	Option(
+		Option::AM,
 		type_,
 		valueDate_,
 		maturityDate_, 
@@ -48,6 +49,7 @@ AmOption::AmOption(
 		double  r_,
 		double  q_) :
 	Option(
+		Option::AM,
 		type_,
 		S_,
 	    K_,

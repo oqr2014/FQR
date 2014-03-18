@@ -17,6 +17,7 @@ Option& Option::operator=(const Option& option_)
 {
     if (this == &option_) 
         return *this;  
+	_style        = option_._style; 
 	_type         = option_._type; 
     _valueDate    = option_._valueDate; 
     _maturityDate = option_._maturityDate;  
@@ -34,7 +35,8 @@ Option& Option::operator=(const Option& option_)
 } 
 
 Option::Option(
-    Type type_, 
+	Style   style_, 
+    Type    type_, 
     const QuantLib::Date&  valueDate_,               
     const QuantLib::Date&  maturityDate_,               
     double  S_, 
@@ -42,7 +44,8 @@ Option::Option(
     double  sigma_, 
     double  r_,
 	double  q_) :   
-    _type(type_),  
+	_style(style_),  
+    _type(type_), 
     _valueDate(valueDate_),  
     _maturityDate(maturityDate_),  
     _S (S_),  
@@ -57,6 +60,7 @@ Option::Option(
 }  
 
 Option::Option(
+	Style   style_, 
     Type    type_, 
     double  S_, 
     double  K_,
@@ -64,6 +68,7 @@ Option::Option(
     double  sigma_, 
     double  r_,
 	double  q_) :
+	_style(style_),  
     _type(type_),  
     _S(S_),  
     _K(K_),  
@@ -80,6 +85,14 @@ std::string Option::getTypeName() const
         return std::string("PUT");
     else
         return std::string("CALL");  
+}
+
+std::string Option::getStyleName() const 
+{
+    if (_style == 0) 
+        return std::string("EUROPEAN");
+    else
+        return std::string("AMERICAN");  
 }
 
 void Option::calcDelta(double pct_) 
@@ -161,6 +174,7 @@ double Option::calcImplVol(double price_)
 
 std::ostream& operator<<(std::ostream& out_, const Option& option_) 
 {
+    out_ << "Style=" << option_.getStyleName() << std::endl; 
     out_ << "Type=" << option_.getTypeName() << std::endl; 
     out_ << "ValueDate=" << option_.getValueDate() << std::endl; 
     out_ << "MaturityDate=" << option_.getMaturityDate() << std::endl; 

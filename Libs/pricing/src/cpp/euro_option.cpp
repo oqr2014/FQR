@@ -34,6 +34,7 @@ EuroOption::EuroOption(
 		double  r_,
 		double  q_) : 
 	Option(
+		Option::EURO, 
 		type_,
 		valueDate_,
 		maturityDate_, 
@@ -53,6 +54,7 @@ EuroOption::EuroOption(
 		double  r_,
 		double  q_) :
 	Option(
+		Option::EURO, 
 		type_,
 		S_,
 	    K_,

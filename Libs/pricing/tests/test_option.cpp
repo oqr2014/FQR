@@ -1,64 +1,107 @@
 #include <iostream>
 #include <oqr/pricing/euro_option.hpp> 
 #include <oqr/pricing/am_option.hpp> 
+#include <oqr/pricing/test_kit.hpp>
 
+namespace QR 
+{ 
 
-static void read_euro_option_data( )
+class TestOption : public TestFunctor {
+public: 
+	TestOption(const std::string& testName_) : TestFunctor(testName_) {}
+	virtual int readInput(); 
+	virtual void operator()(void); 
+private: 
+	EuroOption::Style   _style;
+	EuroOption::Type	_type; 
+	QuantLib::Date      _valueDate; 
+	QuantLib::Date      _maturityDate; 
+	double				_S; 
+	double				_K; 
+	double				_T; 
+	double				_sigma; 
+	double				_r; 
+	double				_q;		
+}; 
+
+int TestOption::readInput() 
 {
-	
-}
-
-
-int main(int argc, const char* argv[])
-{
-	std::cout << "test european option ..." << std::endl;
-	QR::EuroOption euro_option(
-		QR::Option::PUT,
-		36,  //spot
-		40,  //strike 
-		1.,  //T2M
-		.2,  //vol
-		.06, //r 
-		.06); //q 
-	euro_option.calc(); 
-	std::cout << "European option: " << euro_option << std::endl; 	
-	euro_option.calcDelta(); 
-	euro_option.calcVega(); 
-	euro_option.calcGamma(); 
-	euro_option.calcTheta(); 
-	euro_option.calcRho(); 
-	std::cout << "Numerical calculations of the greeks: " << std::endl; 
-	std::cout << "delta=" << euro_option.getGreeks().getDelta() << std::endl; 
-	std::cout << "vega=" << euro_option.getGreeks().getVega() << std::endl; 
-	std::cout << "gamma=" << euro_option.getGreeks().getGamma() << std::endl; 
-	std::cout << "theta=" << euro_option.getGreeks().getTheta() << std::endl; 
-	std::cout << "rho=" << euro_option.getGreeks().getRho() << std::endl;
-	double price = 5.277;  
-	std::cout << "Implied Vol for price(" << price << ")=" << euro_option.calcImplVol(price) << std::endl; 
-
-	std::cout << "======================================================================" <<std::endl; 
-	QR::AmOption am_option(
-		QR::Option::PUT,
-		36,  //spot
-		40,  //strike 
-		1.,  //T2M
-		.2,  //vol
-		.06, //r 
-		.06); //q 
-	am_option.calcPrice(); 
-	std::cout << "American option: " << am_option << std::endl; 	
-	std::cout << "American option price="<< am_option.getPrice() << std::endl; 
-	am_option.calcDelta(); 
-	am_option.calcVega(); 
-	am_option.calcGamma(); 
-	am_option.calcTheta(); 
-	am_option.calcRho(); 
-	std::cout << "Numerical calculations of the greeks: " << std::endl; 
-	std::cout << "delta=" << am_option.getGreeks().getDelta() << std::endl; 
-	std::cout << "vega=" << am_option.getGreeks().getVega() << std::endl; 
-	std::cout << "gamma=" << am_option.getGreeks().getGamma() << std::endl; 
-	std::cout << "theta=" << am_option.getGreeks().getTheta() << std::endl; 
-	std::cout << "rho=" << am_option.getGreeks().getRho() << std::endl;
-	std::cout << "Implied Vol for price(" << price << ")=" << am_option.calcImplVol(price) << std::endl; 
+	while ( !_ifs.eof() ) { 
+		std::string style; 
+		_ifs >> style;  
+		if ('#' != style[0]) {
+			if ( style == "EUROPEAN" || style == "EURO")
+				_style = Option::EUROPEAN; 
+			else
+				_style = Option::AMERICAN; 
+			break; 
+		}
+		// skip comment line starting with '#'
+		_ifs.ignore(1024, '\n');
+	}
+	if (_ifs.eof()) 
+		return -1; 
+	std::string type; 
+	_ifs >> type; 
+	_type = (type == "CALL") ? Option::CALL : Option::PUT;
+	_ifs >> _S; 
+	_ifs >> _K; 
+	_ifs >> _T; 
+	_ifs >> _sigma; 
+	_ifs >> _r; 
+	_ifs >> _q; 
+	_ifs.ignore(1024, '\n'); 
 	return 0; 
 }
+
+void TestOption::operator()(void)
+{
+	std::cout << "test european option ..." << std::endl;
+	OptionPtr optionPtr; 
+	if (_style == Option::EUROPEAN) {
+		optionPtr = OptionPtr( new EuroOption(
+					_type,
+					_S,
+					_K,
+					_T,
+					_sigma,
+					_r,
+					_q) );
+	} 
+	else {
+		optionPtr = OptionPtr( new AmOption( 
+					_type,
+					_S,
+					_K,
+					_T,
+					_sigma,
+					_r,
+					_q) );
+	}
+
+	optionPtr->calc(); 
+	_ofs << "European option: " << *optionPtr << std::endl; 	
+	optionPtr->calcDelta(); 
+	optionPtr->calcVega(); 
+	optionPtr->calcGamma(); 
+	optionPtr->calcTheta(); 
+	optionPtr->calcRho(); 
+	_ofs << "Numerical calculations of the greeks: " << std::endl; 
+	_ofs << "delta=" << optionPtr->getGreeks().getDelta() << std::endl; 
+	_ofs << "vega="  << optionPtr->getGreeks().getVega()  << std::endl; 
+	_ofs << "gamma=" << optionPtr->getGreeks().getGamma() << std::endl; 
+	_ofs << "theta=" << optionPtr->getGreeks().getTheta() << std::endl; 
+	_ofs << "rho="   << optionPtr->getGreeks().getRho()   << std::endl;
+	double price = 5.277;  
+	_ofs << "Implied Vol for price(" << price << ")=" << optionPtr->calcImplVol(price) << std::endl; 	
+}
+
+} 
+int main(int argc, const char* argv[])
+{
+	QR::TestOption test_option("TestOption");
+	test_option.test();  	
+	return 0; 
+}
+
+ 

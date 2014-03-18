@@ -1,0 +1,6 @@
+#Style  Type   S  K  T  sigma  r   q 
+EUROPEAN PUT  36 40 1.   .2  .06 .06   
+EUROPEAN CALL 36 40 1.   .2  .06 .06 
+AMERICAN PUT  36 40 1.   .2  .06 .06   
+AMERICAN CALL 36 40 1.   .2  .06 .06 
+

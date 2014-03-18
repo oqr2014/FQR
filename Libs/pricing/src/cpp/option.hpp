@@ -22,13 +22,21 @@ public:
         PUT = -1, 
         CALL = 1 
     }; 
+	
+	enum Style {
+		EUROPEAN = 0, 
+		AMERICAN = 1, 
+		EURO     = 0, 
+		AM       = 1 	
+	}; 
 
     Option(); 
     Option(const Option& option_); 
     Option& operator=(const Option& option_); 
 
     Option(
-        Type    type_, 
+		Style   style_,  
+        Type    type_,
         const QuantLib::Date&  valueDate_,               
         const QuantLib::Date&  maturityDate_,               
         double  S_, 
@@ -38,6 +46,7 @@ public:
 		double  q_);
  
     Option(
+		Style   style_,  
         Type    type_, 
         double  S_, 
         double  K_,
@@ -61,7 +70,9 @@ public:
 	virtual double calcImplVol(double price_); 
 
     std::string getTypeName() const; 
+    std::string getStyleName() const; 
     Type getType() const { return _type; }  
+    Style getStyle() const { return _style; }  
     QuantLib::Date getValueDate() const { return _valueDate; }
     QuantLib::Date getMaturityDate() const { return _maturityDate; }
     double getSpot() const { return _S; }
@@ -76,6 +87,7 @@ public:
 	Greeks getGreeks() const { return _greeks; }
 
     void setType(Type type_) { _type = type_; _initFlag = 0; } 
+    void setStyle(Style style_) { _style = style_; _initFlag = 0; } 
     void setValueDate(const QuantLib::Date& date_) { _valueDate = date_; _initFlag = 0; }
     void setMaturityDate(const QuantLib::Date& date_) { _maturityDate = date_; _initFlag = 0; }
     void setSpot(double S_) { _S = S_; _initFlag = 0; }
@@ -90,6 +102,7 @@ public:
 	void setGreeks(const Greeks& greeks_) { _greeks = greeks_; _initFlag = 0; }
 
 protected: 
+	Style _style; 
     Type  _type; 
     QuantLib::Date  _valueDate; 
     QuantLib::Date  _maturityDate;     
