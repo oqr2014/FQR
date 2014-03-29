@@ -42,7 +42,7 @@ class OptionAttrParser:
 		return file_list 
 
 	def parse_file(self, filename_):
-		print 'parsing:', filename_ 
+#		print 'parsing:', filename_ 
 		dom = minidom.parse(filename_)
 #		print xmldoc.toxml()	
 		for option in dom.getElementsByTagName('OptionProduct'):

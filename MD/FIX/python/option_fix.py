@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#########################################################################################################
+#################################################################################################
 # FIX parser
 # FIX tags: 
 # 48=SecurityID
@@ -16,7 +16,7 @@
 # parse and selected MD: 
 # () order starts with tag 279
 # () Select 269=0/1, 279=1 and 1023=1, i.e. select top level bid/ask orders.
-#########################################################################################################
+#################################################################################################
 
 import os 
 
@@ -40,8 +40,10 @@ class FixMsg:
 			self.entry_time, self.update_action, self.price_level
 
 class FixMsgParser: 
-	def __init__(self, str_=None, filename_=None):
+	def __init__(self, str_=None, filename_=None, filter_=None):
 		self.selected_trades = 0
+		self.filter_by = filter_
+		self.orders=[]
 		if str_ is None: 
 			if filename_ is None: 
 				raise ArgumentError('Error: please input a string or a filename')
@@ -86,14 +88,16 @@ class FixMsgParser:
 						entry_time = tag[4:]
 					elif "1023=" in tag:
 						price_level = int(tag[5:])
-				if selected : 
+				if selected: 
 					if ( entry_type == 0 or entry_type == 1 ) and price_level == 1: 
-						fix_msg = FixMsg(sid, send_time, trade_date, entry_type, \
+						fix_msg = None
+						if ( self.filter_by is None ) or self.filter_by.has_key(sid):
+							fix_msg = FixMsg(sid, send_time, trade_date, entry_type, \
 									price, quantity, entry_time, update_action, price_level) 
-						self.selected_trades += 1
-						print self.selected_trades, " trades selected"
-						fix_msg.print_out()
-
+							self.selected_trades += 1
+							self.orders.append(fix_msg)
+#							print self.selected_trades
+#							fix_msg.print_out()
 
 	def parse_fix_file(self, filename_): 
 		ins=open(filename_, "r")

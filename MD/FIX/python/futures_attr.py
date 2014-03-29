@@ -38,7 +38,7 @@ class FuturesAttrParser:
 		return file_list 
 
 	def parse_file(self, filename_):
-		print 'parsing:', filename_ 
+#		print 'parsing:', filename_ 
 		dom = minidom.parse(filename_)
 		for futures in dom.getElementsByTagName('Product'):
 			fid = int(futures.getElementsByTagName('SecurityID')[0].childNodes[0].nodeValue)
