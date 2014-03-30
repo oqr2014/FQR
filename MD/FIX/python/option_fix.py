@@ -56,7 +56,7 @@ class FixMsgParser:
 			self.parse_fix_msg(str_)
 
 	def parse_fix_msg(self, str_): 
-		trades=str_.split("279=1")
+		trades=str_.split("\x01279=")
 		send_time = ""
 		trade_date = "" 
 		for i, trade in enumerate(trades):
@@ -68,18 +68,17 @@ class FixMsgParser:
 			price_level = 99 
 
 			tags=trade.split("\x01")
-			if i==0:
+			if i == 0: ### parse fix msg header 
 				for tag in tags: 
 					if "52=" in tag: 
 						send_time = tag[3:]
 					elif "75=" in tag: 
 						trade_date = tag[3:]
-			else:
-				selected = True
+			else: ### parse trade
+				update_action = int(tags[0])	
+				if update_action != 1: 
+					continue 
 				for tag in tags: 
-					if "279=" in tag:
-						selected = False
-						break
 					if "48=" in tag:
 						sid = int(tag[3:])
 					elif "269=" in tag: 
@@ -92,16 +91,14 @@ class FixMsgParser:
 						entry_time = getSec(tag[4:])
 					elif "1023=" in tag:
 						price_level = int(tag[5:])
-				if selected: 
-					if ( entry_type == 0 or entry_type == 1 ) and price_level == 1: 
-						fix_msg = None
-						if ( self.filter_by is None ) or self.filter_by.has_key(sid):
-							fix_msg = FixMsg(sid, send_time, trade_date, entry_type, \
+			if ( entry_type == 0 or entry_type == 1 ) and price_level == 1: 
+				if ( self.filter_by is None ) or self.filter_by.has_key(sid):
+					fix_msg = FixMsg(sid, send_time, trade_date, entry_type, \
 									price, quantity, entry_time, update_action, price_level) 
-							self.selected_trades += 1
-							self.orders.append(fix_msg)
-#							print self.selected_trades
-#							fix_msg.print_out()
+					self.selected_trades += 1
+					self.orders.append(fix_msg)
+#					print self.selected_trades
+#					fix_msg.print_out()
 
 	def parse_fix_file(self, filename_): 
 		ins=open(filename_, "r")
@@ -110,5 +107,7 @@ class FixMsgParser:
 		ins.close()
 
 if __name__ == "__main__":
-	fixParser = FixMsgParser(filename_='/OMM/data/ESOptions.log')
-		
+	fixParser = FixMsgParser(filename_='/OMM/data/fix_options.log')
+	print "total selected trades=", fixParser.selected_trades
+	print fixParser.orders	
+
