@@ -29,15 +29,15 @@ private:
 
 class Utility {
 public: 
+	Utility() {}
+	Utility(const Utility& util_) {}
+	virtual ~Utility() {} 
 	static void trimLeft(std::string& str_); 
 	static void trimRight(std::string& str_); 
 	static void trimBoth(std::string& str_); 
 	static QuantLib::Date string2Date(const std::string &str_);       
 
 private: 
-	Utility(); 
-	Utility(const Utility &util_); 
-	~Utility(); 
 };  
 
 std::istream& operator>>(std::istream& in_, QuantLib::Date& date_); 	

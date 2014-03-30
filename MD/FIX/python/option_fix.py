@@ -20,6 +20,10 @@
 
 import os 
 
+def getSec(s_):
+	l = s_.split(':')
+	return int(l[0]) * 3600 + int(l[1]) * 60 + int(l[2])
+
 class FixMsg: 
 	def __init__(self, sid_, send_time_, trade_date_, \
 				entry_type_, price_, quantity_, entry_time_, \
@@ -85,7 +89,7 @@ class FixMsgParser:
 					elif "271=" in tag:
 						quantity = int(tag[4:])
 					elif "273=" in tag:
-						entry_time = tag[4:]
+						entry_time = getSec(tag[4:])
 					elif "1023=" in tag:
 						price_level = int(tag[5:])
 				if selected: 
