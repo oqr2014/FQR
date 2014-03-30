@@ -44,7 +44,7 @@ void Utility::trimBoth(std::string& str_)
 	trimRight(str_);
 }
 
-QuantLib::Date Utility::string2Date(const std::string &str_)
+QuantLib::Date Utility::str2Date(const std::string &str_)
 {
 // support this format "MM/DD/YYYY" only e.g. 03/17/2014
 	QuantLib::Date date;
@@ -73,7 +73,7 @@ std::istream& operator>>(std::istream& in_, QuantLib::Date& date_)
 	int day, month, year; 
 	std::string str; 
 	in_ >> str; 
-	date_ = Utility::string2Date(str); 
+	date_ = Utility::str2Date(str); 
 	return in_; 
 }
 

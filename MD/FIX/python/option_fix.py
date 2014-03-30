@@ -107,6 +107,7 @@ class FixMsgParser:
 		ins=open(filename_, "r")
 		for line in ins:
 			self.parse_fix_msg(line)
+		ins.close()
 
 if __name__ == "__main__":
 	fixParser = FixMsgParser(filename_='/OMM/data/ESOptions.log')

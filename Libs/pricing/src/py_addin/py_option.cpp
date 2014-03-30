@@ -8,7 +8,8 @@ using namespace QR;
 
 void export_QR_Option()
 {
-    class_<Option>("Option", init<>())
+scope Option_scope
+  = class_<Option>("Option", init<>())
     .def(init<const Option&>()) 
     .def(init<Option::Style, Option::Type, const QuantLib::Date&, const QuantLib::Date&, 
 		double, double, double, double, double>()) 
@@ -21,10 +22,11 @@ void export_QR_Option()
 	.def("calcVega", &Option::calcVega)
 	.def("calcTheta", &Option::calcTheta)
 	.def("calcRho", &Option::calcRho)
+	.def("calcImplVol", &Option::calcImplVol)
 	.def("getTypeName", &Option::getTypeName)
 	.def("getStyleName", &Option::getStyleName)
-    .add_property("style", &Option::getStyle, &Option::setStyle) 
-    .add_property("type", &Option::getType, &Option::setType) 
+    .add_property("ex_style", &Option::getStyle, &Option::setStyle) 
+    .add_property("cp_type", &Option::getType, &Option::setType) 
     .add_property("spot", &Option::getSpot, &Option::setSpot) 
     .add_property("strike", &Option::getStrike, &Option::setStrike) 
     .add_property("T2M", &Option::getT2M, &Option::setT2M) 
@@ -42,10 +44,10 @@ void export_QR_Option()
 	; 
 
 	enum_<Option::Style>("Style")
-	.value("EUROPEAN", Option::EUROPEAN)
-	.value("AMERICAN", Option::AMERICAN)
 	.value("EURO", Option::EURO)
 	.value("AM", Option::AM)
+	.value("EUROPEAN", Option::EUROPEAN)
+	.value("AMERICAN", Option::AMERICAN)
 	; 
 }
 
