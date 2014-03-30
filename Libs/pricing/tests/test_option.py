@@ -32,6 +32,12 @@ class TestOption:
 			opt.greeks.vega, opt.greeks.gamma, opt.greeks.theta, opt.greeks.rho, impl_vol
 
 	def write_option_file(self): 
+		outs = open(self.outFile, "w")
+		for opt, impl_vol in zip(self.options, self.impl_vols): 
+			print >> outs, opt.ex_style, opt.cp_type, opt.price, \
+				opt.greeks.delta, opt.greeks.vega, opt.greeks.gamma, \
+				opt.greeks.theta, opt.greeks.rho, impl_vol
+		outs.close()
 		print "done!"
 
 	def read_option_file(self):
