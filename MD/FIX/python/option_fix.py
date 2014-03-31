@@ -20,9 +20,17 @@
 
 import os 
 
-def getSec(s_):
-	l = s_.split(':')
-	return int(l[0]) * 3600 + int(l[1]) * 60 + int(l[2])
+def timeStr2Sec(str_): # time string format HH:MM::SS e.g. 14:53:01 
+	ll = str_.split(':')
+	return int(ll[0]) * 3600 + int(ll[1]) * 60 + int(ll[2])
+
+def sec2TimeStr(sec_): 
+	hour = sec_ / 3600
+	sec_ = sec_ % 3600 
+	minute = sec_ / 60 
+	sec = sec_ % 60
+	ss = str(hour).zfill(2)+":"+str(minute).zfill(2)+":"+str(sec).zfill(2)
+	return (ss)
 
 class FixMsg: 
 	def __init__(self, sid_, send_time_, trade_date_, \
@@ -50,7 +58,7 @@ class FixMsgParser:
 		self.orders=[]
 		if str_ is None: 
 			if filename_ is None: 
-				raise ArgumentError('Error: please input a string or a filename')
+				raise Exception('Error: please input a string or a filename')
 			self.parse_fix_file(filename_)
 		else:
 			self.parse_fix_msg(str_)
@@ -88,13 +96,13 @@ class FixMsgParser:
 					elif "271=" in tag:
 						quantity = int(tag[4:])
 					elif "273=" in tag:
-						entry_time = getSec(tag[4:])
+						entry_time = timeStr2Sec(tag[4:])
 					elif "1023=" in tag:
 						price_level = int(tag[5:])
 			if ( entry_type == 0 or entry_type == 1 ) and price_level == 1: 
 				if ( self.filter_by is None ) or self.filter_by.has_key(sid):
 					fix_msg = FixMsg(sid, send_time, trade_date, entry_type, \
-									price, quantity, entry_time, update_action, price_level) 
+							price, quantity, entry_time, update_action, price_level) 
 					self.selected_trades += 1
 					self.orders.append(fix_msg)
 #					print self.selected_trades

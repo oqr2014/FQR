@@ -1,7 +1,11 @@
 #!/usr/bin/python
+##################################################
+# option utility functions 
+##################################################
 
 import os
 from liboqr_py import * 
+from datetime import datetime 
 
 def int2Month(i_): 
 	if i_ == 1:  
@@ -41,21 +45,18 @@ def str2call_put(str_):
 		print "invalid call/put type:", str_
 		raise Exception("Error: str2call_put failed")
 
-def str2Date(str_): 
-	#format: MM/DD/YYYY e.g. 03/1/2014
-	ll = str_.split("/")
-	if len(ll)!=3: 
-		print str, " can't convert to Date"
-		raise Exception("Error: str2Date() failed!")
-	return Date( int(ll[1]), int2Month(int(ll[0])), int(ll[2]) )
-
+def str2qlDate(str_, format_="%Y%m%d"): 
+	#default format: YYYYMMDD e.g. 20140321
+	d1 = datetime.strptime(str_, format_)
+	return Date(d1.day, int2Month(d1.month), d1.year)
+	
 
 if __name__ == "__main__": 
 	m = int2Month(10)
 	print m
 	t = str2call_put("CALL")
 	print t 
-	d = str2Date("03/1/2014")
+	d = str2qlDate("03/1/2014")
 	print "day=", d.dayOfMonth(), "month=", d.month(), "year=", d.year()
 
 

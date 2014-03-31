@@ -5,66 +5,59 @@
 import os 
 from liboqr_py import * 
 from option_util import * 
+from option import * 
+
+def strDate2Int(str_):
+#format: MM/DD/YYYY e.g. 03/1/2014, return 20140301
+	ll = str_.split("/")
+	if len(ll) != 3: 
+		print str_, " can't convert to int date"
+		raise Exception("Error: strDate2Int() failed!")
+	i = int(ll[2])*10000 + int(ll[0])*100 + int(ll[1])
+	return i 
 
 class TestOption:
 	def __init__(self, inFile_="./inputs/TestOption.txt", outFile_="./py_outs/TestOption.out"):
-		self.PCT_CHANGE_GREEKS=.001
 		self.inFile=inFile_
 		self.outFile=outFile_
 		self.options=[]
-		self.prices_impl_vol=[]
-		self.impl_vols=[]
 		self.read_option_file()
 		self.calc()
 		self.write_option_file() 
 
 	def calc(self): 
-		for opt, price in zip(self.options, self.prices_impl_vol): 
+		for opt in self.options: 
 			opt.calcPrice()
-			opt.calcDelta(self.PCT_CHANGE_GREEKS)
-			opt.calcVega(self.PCT_CHANGE_GREEKS)
-			opt.calcGamma(self.PCT_CHANGE_GREEKS)
-			opt.calcTheta(self.PCT_CHANGE_GREEKS)
-			opt.calcRho(self.PCT_CHANGE_GREEKS)
-			impl_vol = opt.calcImplVol(price)
-			self.impl_vols.append(impl_vol)
-			print opt.ex_style, opt.cp_type, opt.price, opt.greeks.delta, \
-			opt.greeks.vega, opt.greeks.gamma, opt.greeks.theta, opt.greeks.rho, impl_vol
+			opt.calcDelta()
+			opt.calcVega()
+			opt.calcGamma()
+			opt.calcTheta()
+			opt.calcRho()
+			opt.calcImplVol()
+			print opt.ex_style, opt.cp_type, opt.price, opt.delta, opt.vega, opt.gamma, opt.theta, opt.rho, opt.impl_vol
 
 	def write_option_file(self): 
 		outs = open(self.outFile, "w")
-		for opt, impl_vol in zip(self.options, self.impl_vols): 
+		for opt in self.options: 
 			print >> outs, opt.ex_style, opt.cp_type, opt.price, \
-				opt.greeks.delta, opt.greeks.vega, opt.greeks.gamma, \
-				opt.greeks.theta, opt.greeks.rho, impl_vol
+				opt.delta, opt.vega, opt.gamma, opt.theta, opt.rho, opt.impl_vol
 		outs.close()
 		print "done!"
 
 	def read_option_file(self):
-		options = []
 		ins = open(self.inFile, "r")
 		for line in ins:
 			ll = line.split()
 			if len(ll)==0 or ll[0][0]=='#': 
 				continue
-			if ll[0]=="EUROPEAN":
-				if len(ll)==9:
-					self.options.append( EuroOption(str2call_put(ll[1]), float(ll[2]), float(ll[3]), \
-								float(ll[4]), float(ll[5]), float(ll[6]), float(ll[7])) )
-					self.prices_impl_vol.append( float(ll[8]) )
-				elif len(ll)==10:
-					self.options.append( EuroOption(str2call_put(ll[1]), str2Date(ll[2]), str2Date(ll[3]), \
-								float(ll[4]), float(ll[5]), float(ll[6]), float(ll[7]), float(ll[8])) )
-					self.prices_impl_vol.append( float(ll[9]) )
-			elif ll[0]=="AMERICAN": 
-				if len(ll)==9:
-					self.options.append( AmOption(str2call_put(ll[1]), float(ll[2]), float(ll[3]), \
-								float(ll[4]), float(ll[5]), float(ll[6]), float(ll[7])) )
-					self.prices_impl_vol.append( float(ll[8]) )
-				elif len(ll)==10:
-					self.options.append( AmOption(str2call_put(ll[1]), str2Date(ll[2]), str2Date(ll[3]), \
-								float(ll[4]), float(ll[5]), float(ll[6]), float(ll[7]), float(ll[8])) )
-					self.prices_impl_vol.append( float(ll[9]) )
+			if len(ll) == 9: 
+				option = Option(ex_style_=ll[0], cp_type_=ll[1], T_=float(ll[4]), S_=float(ll[2]), K_=float(ll[3]), \
+					sigma_=float(ll[5]), r_=float(ll[6]), q_=float(ll[7]), price_impl_vol_=float(ll[8]))
+				self.options.append(option)
+			elif len(ll) == 10: 
+				option = Option(ex_style_=ll[0], cp_type_=ll[1], trade_date_=strDate2Int(ll[2]), exp_date_=strDate2Int(ll[3]), \
+					S_=float(ll[4]), K_=float(ll[5]), sigma_=float(ll[6]), r_=float(ll[7]), q_=float(ll[8]), price_impl_vol_=float(ll[9]))
+				self.options.append(option)
 		ins.close()
 
 if __name__ == "__main__":

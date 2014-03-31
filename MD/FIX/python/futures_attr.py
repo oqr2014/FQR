@@ -22,6 +22,7 @@ class FuturesAttr:
 class FuturesAttrParser: 
 	def __init__(self, filename_=None, dirname_=None): 
 		self.fid_dict = {}
+		self.exp_date_dict = {}
 
 		if filename_ is None: 
 			file_list = self.read_dir_file(dirname_)
@@ -42,11 +43,16 @@ class FuturesAttrParser:
 		dom = minidom.parse(filename_)
 		for futures in dom.getElementsByTagName('Product'):
 			fid = int(futures.getElementsByTagName('SecurityID')[0].childNodes[0].nodeValue)
+			security_desc = int(futures.getElementsByTagName('SecurityDesc')[0].childNodes[0].nodeValue)
+			if security_desc != "ESH4": 
+				continue
 			exp_date = int(futures.getElementsByTagName('ExpirationDate')[0].childNodes[0].nodeValue)
 			futures_attr = FuturesAttr(fid, exp_date)
 			self.fid_dict[futures_attr.fid] = futures_attr
+			self.exp_date_dict[futures_attr.exp_date] = futures_attr
 
 if __name__ == "__main__":
 	futuresAttr = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
 	print futuresAttr.fid_dict 
+	print futuresAttr.exp_date_dict 
 		
