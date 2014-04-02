@@ -43,15 +43,15 @@ class Option:
 			
 	def create_euro_option(self):
 		if self.trade_date != 0 and self.exp_date != 0: 
-			self.option = EuroOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), str2qlDate(str(self.exp_date)), \
-							self.S, self.K, self.sigma, self.r, self.q) 
+			self.option = EuroOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
+							str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
 		else:
 			self.option = EuroOption(str2call_put(self.cp_type), self.S, self.K, self.T, self.sigma, self.r, self.q) 
 
 	def create_am_option(self): 
 		if self.trade_date != 0 and self.exp_date != 0: 
-			self.option = AmOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), str2qlDate(str(self.exp_date)), \
-							self.S, self.K, self.sigma, self.r, self.q) 
+			self.option = AmOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
+							str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
 		else:
 			self.option = AmOption(str2call_put(self.cp_type), self.S, self.K, self.T, self.sigma, self.r, self.q) 
 
