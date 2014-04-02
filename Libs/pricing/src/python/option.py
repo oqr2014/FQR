@@ -40,6 +40,7 @@ class Option:
 		else: 
 			print "Error: excise style: ", self.ex_style, "invalid"
 			raise Exception("Option::__init__ failed")
+		self.T = self.option.T
 			
 	def create_euro_option(self):
 		if self.trade_date != 0 and self.exp_date != 0: 
@@ -54,6 +55,11 @@ class Option:
 				str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
 		else:
 			self.option = AmOption(str2call_put(self.cp_type), self.S, self.K, self.T, self.sigma, self.r, self.q) 
+
+	def print_out(self):
+		print "ex_style=", self.ex_style, "cp_type=", self.cp_type, "trade_date=", self.trade_date, \
+			"exp_date=", self.exp_date, "T=", self.T, "S=", self.S, "K=", self.K, \
+			"sigma=", self.sigma, "r=", self.r, "q=", self.q, "price_impl_vol=", self.price_impl_vol
 
 	def calcPrice(self): 
 		self.option.calcPrice()
@@ -97,12 +103,14 @@ if __name__ == "__main__":
 				T_ = 1., S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
 	option1.calcPrice()	
 	option1.calcImplVol() 
+	option1.print_out()
 	print "price=", option1.price, "impl_vol=", option1.impl_vol 
 
 	option2 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", trade_date_ = 20140301, exp_date_ = 20150317, \
 				S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
 	option2.calcPrice()	
 	option2.calcImplVol() 
+	option2.print_out()
 	print "price=", option2.price, "impl_vol=", option2.impl_vol 
 
 
