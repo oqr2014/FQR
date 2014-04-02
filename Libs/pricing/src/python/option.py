@@ -47,14 +47,16 @@ class Option:
 			self.option = EuroOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
 				str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
 		else:
-			self.option = EuroOption(str2call_put(self.cp_type), self.S, self.K, self.T, self.sigma, self.r, self.q) 
+			self.option = EuroOption(str2call_put(self.cp_type), self.S, self.K, self.T, \
+				self.sigma, self.r, self.q) 
 
 	def create_am_option(self): 
 		if self.trade_date != 0 and self.exp_date != 0: 
 			self.option = AmOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
 				str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
 		else:
-			self.option = AmOption(str2call_put(self.cp_type), self.S, self.K, self.T, self.sigma, self.r, self.q) 
+			self.option = AmOption(str2call_put(self.cp_type), self.S, self.K, self.T, \
+				self.sigma, self.r, self.q) 
 
 	def print_out(self):
 		print "ex_style=", self.ex_style, "cp_type=", self.cp_type, "trade_date=", self.trade_date, \
@@ -100,17 +102,17 @@ class Option:
 
 if __name__ == "__main__": 
 	option1 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", \
-				T_ = 1., S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
+		T_ = 1., S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
 	option1.calcPrice()	
 	option1.calcImplVol() 
 	option1.print_out()
 	print "price=", option1.price, "impl_vol=", option1.impl_vol 
 
-	option2 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", trade_date_ = 20140301, exp_date_ = 20150317, \
-				S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
+	option2 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", \
+		trade_date_ = 20140301, exp_date_ = 20150317, \
+		S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
 	option2.calcPrice()	
 	option2.calcImplVol() 
 	option2.print_out()
 	print "price=", option2.price, "impl_vol=", option2.impl_vol 
-
 
