@@ -34,7 +34,8 @@ class TestOption:
 			opt.calcTheta()
 			opt.calcRho()
 			opt.calcImplVol()
-			print opt.ex_style, opt.cp_type, opt.price, opt.delta, opt.vega, opt.gamma, opt.theta, opt.rho, opt.impl_vol
+			print opt.ex_style, opt.cp_type, opt.price, opt.delta, \
+				opt.vega, opt.gamma, opt.theta, opt.rho, opt.impl_vol
 
 	def write_option_file(self): 
 		outs = open(self.outFile, "w")
@@ -51,12 +52,14 @@ class TestOption:
 			if len(ll)==0 or ll[0][0]=='#': 
 				continue
 			if len(ll) == 9: 
-				option = Option(ex_style_=ll[0], cp_type_=ll[1], T_=float(ll[4]), S_=float(ll[2]), K_=float(ll[3]), \
-					sigma_=float(ll[5]), r_=float(ll[6]), q_=float(ll[7]), price_impl_vol_=float(ll[8]))
+				option = Option(ex_style_=ll[0], cp_type_=ll[1], T_=float(ll[4]), \
+					S_=float(ll[2]), K_=float(ll[3]), sigma_=float(ll[5]), r_=float(ll[6]), \
+					q_=float(ll[7]), price_impl_vol_=float(ll[8]))
 				self.options.append(option)
 			elif len(ll) == 10: 
-				option = Option(ex_style_=ll[0], cp_type_=ll[1], trade_date_=strDate2Int(ll[2]), exp_date_=strDate2Int(ll[3]), \
-					S_=float(ll[4]), K_=float(ll[5]), sigma_=float(ll[6]), r_=float(ll[7]), q_=float(ll[8]), price_impl_vol_=float(ll[9]))
+				option = Option(ex_style_=ll[0], cp_type_=ll[1], trade_date_=strDate2Int(ll[2]), \
+					 exp_date_=strDate2Int(ll[3]), S_=float(ll[4]), K_=float(ll[5]), sigma_=float(ll[6]), \
+					  r_=float(ll[7]), q_=float(ll[8]), price_impl_vol_=float(ll[9]))
 				self.options.append(option)
 		ins.close()
 

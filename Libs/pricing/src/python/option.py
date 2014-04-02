@@ -10,7 +10,7 @@ from option_util import *
 
 class Option:
 	def __init__(self, ex_style_ = "", cp_type_ = "", trade_date_ = 0, exp_date_ = 0, \
-					T_ = 0., S_ = 0., K_ = 0., sigma_ = 0., r_ =0., q_ = 0., price_impl_vol_ = 0.): 
+			T_ = 0., S_ = 0., K_ = 0., sigma_ = 0., r_ =0., q_ = 0., price_impl_vol_ = 0.): 
 		self.PCT_CHANGE_GREEKS = .001
 		self.ex_style   = ex_style_
 		self.cp_type    = cp_type_
@@ -44,14 +44,14 @@ class Option:
 	def create_euro_option(self):
 		if self.trade_date != 0 and self.exp_date != 0: 
 			self.option = EuroOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
-							str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
+				str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
 		else:
 			self.option = EuroOption(str2call_put(self.cp_type), self.S, self.K, self.T, self.sigma, self.r, self.q) 
 
 	def create_am_option(self): 
 		if self.trade_date != 0 and self.exp_date != 0: 
 			self.option = AmOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
-							str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
+				str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
 		else:
 			self.option = AmOption(str2call_put(self.cp_type), self.S, self.K, self.T, self.sigma, self.r, self.q) 
 
