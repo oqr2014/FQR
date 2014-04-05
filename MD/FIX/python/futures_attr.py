@@ -43,7 +43,7 @@ class FuturesAttrParser:
 		dom = minidom.parse(filename_)
 		for futures in dom.getElementsByTagName('Product'):
 			fid = int(futures.getElementsByTagName('SecurityID')[0].childNodes[0].nodeValue)
-			security_desc = int(futures.getElementsByTagName('SecurityDesc')[0].childNodes[0].nodeValue)
+			security_desc = futures.getElementsByTagName('SecurityDesc')[0].childNodes[0].nodeValue
 			if security_desc != "ESH4": 
 				continue
 			exp_date = int(futures.getElementsByTagName('ExpirationDate')[0].childNodes[0].nodeValue)

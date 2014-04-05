@@ -66,7 +66,7 @@ class FixMsgParser:
 	def parse_fix_msg(self, str_): 
 		trades=str_.split("\x01279=")
 		send_time = ""
-		trade_date = "" 
+		trade_date = 0 
 		for i, trade in enumerate(trades):
 			sid = 0
 			entry_type = 99
@@ -81,7 +81,7 @@ class FixMsgParser:
 					if "52=" in tag: 
 						send_time = tag[3:]
 					elif "75=" in tag: 
-						trade_date = tag[3:]
+						trade_date = int(tag[3:])
 			else: ### parse trade
 				update_action = int(tags[0])	
 				if update_action != 1: 
@@ -100,6 +100,7 @@ class FixMsgParser:
 					elif "1023=" in tag:
 						price_level = int(tag[5:])
 			if ( entry_type == 0 or entry_type == 1 ) and price_level == 1: 
+# Select 269=0/1, 279=1 and 1023=1, i.e. select top level bid/ask orders.
 				if ( self.filter_by is None ) or self.filter_by.has_key(sid):
 					fix_msg = FixMsg(sid, send_time, trade_date, entry_type, \
 							price, quantity, entry_time, update_action, price_level) 
