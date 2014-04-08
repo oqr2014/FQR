@@ -2,6 +2,8 @@
 
 import socket
 import random
+from futures_attr import * 
+from option_attr import *
 
 def client(str_):
 	HOST, PORT = 'localhost', 22085
@@ -18,4 +20,8 @@ def client(str_):
 	sock.close()
 
 if __name__ == "__main__":
-	client('20140321')
+	futAttr  = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
+	exp_date = 20140321
+	fid      = futAttr.exp_date_dict[exp_date].fid 
+	client(str(fid))
+
