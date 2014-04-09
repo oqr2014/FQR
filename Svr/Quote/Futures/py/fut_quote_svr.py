@@ -14,11 +14,11 @@ import select
 import mcast 
 
 class Channel: 
-	def __init__(self, sock_, thread_, fid_=0, max_size_ = 10000):
+	def __init__(self, sock_, thread_, fids_ = [], max_size_ = 10000):
 		self.sock   = sock_
 		self.thread = thread_ 
-		self.fid    = fid_
-		self.queue  = Queue.Queue(max_size_)
+		self.fids   = fids_
+		self.que    = Queue.Queue(max_size_)
 	
 class McastQuoteThread(threading.Thread, mcast.McastClient): 
 # Receiving quotes from C++ quote server and add the data into the Queue
@@ -26,7 +26,7 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 		threading.Thread.__init__(self)
 		mcast.McastClient.__init__(self)
 		self.svr = svr_
-		self.fid_que_dict = {}
+		self.fid_ques_dict = {}
 			
 	def run(self):
 		ts1 = time.time()
@@ -41,13 +41,14 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 #				print "DATA: ", data
 				fixParser = FixMsgParser(str_=data)
 				for order in fixParser.orders: 
-					if order.sid in self.fid_que_dict.keys():
+					if order.sid in self.fid_ques_dict.keys():
 						strData = self.pack_order_data(order)
 						print "queue data:", strData
-						que = self.fid_que_dict[order.sid]
-						if que.full():
-							que.get()
-						que.put(strData)
+						ques = self.fid_ques_dict[order.sid]
+						for que in ques: 
+							if que.full():
+								que.get()
+							que.put(strData)
 			except socket.error, (val, msg):
 				pass
 #				print "socket.error caught", val, msg 
@@ -55,9 +56,14 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 	def update_fid_que(self):
 		self.svr.sock_dict_lock.acquire()
 		if self.svr.sock_dict_dirty:
-			self.fid_que_dict = {}
+			self.fid_ques_dict = {}
 			for sock in self.svr.sock_dict.keys():
-				self.fid_que_dict[self.svr.sock_dict[sock].fid] = self.svr.sock_dict[sock].queue
+				fids = self.svr.sock_dict[sock].fids
+				for fid in fids:
+					if fid in self.fid_ques_dict.keys():
+						self.fid_ques_dict[fid].append(self.svr.sock_dict[sock].que)
+					else:
+						self.fid_ques_dict[fid] = [self.svr.sock_dict[sock].que]
 			self.svr.sock_dict_dirty = False
 		self.svr.sock_dict_lock.release()
 
@@ -80,7 +86,7 @@ class FutTCPThread(threading.Thread):
 
 	def run(self):
 		ts1 = time.time()
-		self.que = self.svr.sock_dict[self.cliSock].queue
+		self.que = self.svr.sock_dict[self.cliSock].que
 		while 1:
 			strData = self.que.get() 
 			try:
@@ -135,9 +141,10 @@ class FutQuoteSvr(object):
 						data = sock.recv(1024)
 						if data:
 							print 'received %s from %s' %(data, sock.getpeername()) 
-							fid = int(data.strip())
+							fids = data.strip().split(',') # split by comma 
+							fids = map(int, fids)
 							self.sock_dict_lock.acquire()
-							self.sock_dict[sock].fid = fid; 
+							self.sock_dict[sock].fids = fids; 
 							self.sock_dict_dirty = True; 
 							self.sock_dict_lock.release()
 						else: ## without data is a disconnection 
