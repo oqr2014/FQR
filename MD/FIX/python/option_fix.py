@@ -11,7 +11,7 @@
 # 271=quantity
 # 273=MDEntryTime: Time of Market Data Entry
 # 279=MDUpdateAction: Type of Market Data update action. '0'=New '1'=Change '2'=Delete
-# 1023=MDPriceLevel: book level top level=1
+#t 1023=MDPriceLevel: book level top level=1
 # 
 # parse and selected MD: 
 # () order starts with tag 279
@@ -22,7 +22,14 @@ import os
 
 def timeStr2Sec(str_): # time string format HH:MM::SS e.g. 14:53:01 
 	ll = str_.split(':')
-	return int(ll[0]) * 3600 + int(ll[1]) * 60 + int(ll[2])
+	try: 
+		s = int(ll[0]) * 3600 + int(ll[1]) * 60 + int(ll[2])
+	except ValueError: 
+		print "## timeStr2Sec VALUEERROR CAUGHT for $$", str_, "$$"
+	except IndexError: 
+		print "## timeStr2Sec INDEXERROR CAUGHT for $$", str_, "$$"
+	else:
+		return s
 
 def sec2TimeStr(sec_): 
 	hour = sec_ / 3600
@@ -46,10 +53,38 @@ class FixMsg:
 		self.update_action = update_action_
 		self.price_level   = price_level_
 
-	def print_out(self): 
+	def printout(self): 
 		print self.sid, self.send_time, self.trade_date, \
 			self.entry_type, self.price, self.quantity, \
 			self.entry_time, self.update_action, self.price_level
+
+	def pack2str(self):
+		ss = str(self.sid) + "\x01" + self.send_time + "\x01" + \
+			str(self.trade_date) + "\x01" + str(self.entry_type) + "\x01" + \
+			str(self.price) + "\x01" + str(self.quantity) + "\x01" + \
+			str(self.entry_time) + "\x01" + str(self.price_level) + "\x03"
+		return ss
+	
+	@staticmethod
+	def str2order(str_): 
+#TCP socket recv data contains order list or incomplete order 
+		orders = [] 
+		tail = ""
+		strlist = str_.split('\x03')
+		if str_[len(str_)-1] != '\x03': 
+			tail = strlist[len(strlist)-1] 
+			del strlist[-1]	
+		for s1 in strlist: 
+			ss = s1.split('\x01')
+			try:
+				orders.append( FixMsg(int(ss[0]), ss[1], int(ss[2]), \
+						int(ss[3]), float(ss[4]), int(ss[5]), \
+						int(ss[6]), 1, int(ss[7])) )
+			except ValueError: 
+				print "## FixMsg.str2order VALUEERROR CAUGHT for $$", str_, "$$"
+			except IndexError: 
+				print "## FixMsg.str2order INDEXERROR CAUGHT for $$", str_, "$$"
+		return (orders, tail)
 
 class FixMsgParser: 
 	def __init__(self, str_=None, filename_=None, filter_=None):
@@ -76,30 +111,36 @@ class FixMsgParser:
 			price_level = 99 
 
 			tags=trade.split("\x01")
-			if i == 0: ### parse fix msg header 
-				for tag in tags: 
-					if "52=" in tag: 
-						send_time = tag[3:]
-					elif "75=" in tag: 
-						trade_date = int(tag[3:])
-			else: ### parse trade
-				update_action = int(tags[0])	
-				if update_action != 1: 
-					continue 
-				for tag in tags: 
-					if "48=" in tag:
-						sid = int(tag[3:])
-					elif "269=" in tag: 
-						entry_type = int(tag[4:])
-					elif "270=" in tag: 
-						price = float(tag[4:])
-					elif "271=" in tag:
-						quantity = int(tag[4:])
-					elif "273=" in tag:
-						entry_time = timeStr2Sec(tag[4:])
-					elif "1023=" in tag:
-						price_level = int(tag[5:])
-			if ( entry_type == 0 or entry_type == 1 ) and price_level == 1: 
+			try:
+				if i == 0: ### parse fix msg header 
+					for tag in tags: 
+						if "52=" in tag: 
+							send_time = tag[3:]
+						elif "75=" in tag: 
+							trade_date = int(tag[3:])
+				else: ### parse trade
+					update_action = int(tags[0])	
+					if update_action != 1: 
+						continue 
+					for tag in tags: 
+						if "48=" in tag:
+							sid = int(tag[3:])
+						elif "269=" in tag: 
+							entry_type = int(tag[4:])
+						elif "270=" in tag: 
+							price = float(tag[4:])
+						elif "271=" in tag:
+							quantity = int(tag[4:])
+						elif "273=" in tag:
+							entry_time = timeStr2Sec(tag[4:])
+						elif "1023=" in tag:
+							price_level = int(tag[5:])
+			except ValueError: 
+				print "##parse_fix_msg: ValueERROR CAUGHT $$", str_, "$$"
+			except IndexError: 
+				print "##parse_fix_msg: IndexERROR CAUGHT $$", str_, "$$"
+			if (entry_type == 0 or entry_type == 1):
+#and price_level == 1: open level 2 quotes temporarily, for options, we only need top level price. 
 # Select 269=0/1, 279=1 and 1023=1, i.e. select top level bid/ask orders.
 				if ( self.filter_by is None ) or self.filter_by.has_key(sid):
 					fix_msg = FixMsg(sid, send_time, trade_date, entry_type, \
@@ -107,7 +148,7 @@ class FixMsgParser:
 					self.selected_trades += 1
 					self.orders.append(fix_msg)
 #					print self.selected_trades
-#					fix_msg.print_out()
+#					fix_msg.printout()
 
 	def parse_fix_file(self, filename_): 
 		ins=open(filename_, "r")
@@ -116,7 +157,8 @@ class FixMsgParser:
 		ins.close()
 
 if __name__ == "__main__":
-	fixParser = FixMsgParser(filename_='/OMM/data/fix_options.log')
+#	fixParser = FixMsgParser(filename_='/OMM/data/fix_options.log')
+	fixParser = FixMsgParser(filename_='/OMM/data/futures/ESFutures.log')
 	print "total selected trades=", fixParser.selected_trades
-	print fixParser.orders	
+#	print fixParser.orders	
 

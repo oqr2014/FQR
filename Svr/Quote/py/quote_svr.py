@@ -43,8 +43,8 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 				fixParser = FixMsgParser(str_=data)
 				for order in fixParser.orders: 
 					if order.sid in self.oid_ques_dict.keys():
-						strData = self.pack_order_data(order)
-						print "queue data:", strData
+						strData = order.pack2str()
+#						print "queue data:", strData
 						ques = self.oid_ques_dict[order.sid]
 						for que in ques: 
 							if que.full():
@@ -68,11 +68,6 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 			self.svr.sock_dict_dirty = False
 		self.svr.sock_dict_lock.release()
 
-	def pack_order_data(self, order_):
-		ss = str(order_.sid) + "\x01" + order_.send_time + "\x01" + str(order_.trade_date) + "\x01" \
-			+ str(order_.entry_type) + "\x01"  + str(order_.price) + "\x01" + str(order_.quantity) + "\x03"
-		return ss
-
 class TCPThread(threading.Thread):
 #One instance per connection.
 #Override handle(self) to customize action.
@@ -93,11 +88,13 @@ class TCPThread(threading.Thread):
 				self.cliSock.send(strData)
 			except socket.error:
 				self.cliSock.close()
-			else: 
-				print "data sending to GUI", strData
+#			else: 
+#				print "data sending to GUI", strData
 
 class QuoteSvr(object):
 	def __init__(self, HOST_='localhost', PORT_=22085):
+		self.HOST     = HOST_
+		self.PORT     = PORT_
 		self.ADDRESS  = (self.HOST, self.PORT)
 		self.cliSocks = [] 
 		self.threads  = []

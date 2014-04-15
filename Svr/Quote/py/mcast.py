@@ -20,11 +20,11 @@ class McastServer:
 		#to everyone (255 is the level of multicasting)
 		sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
 		while 1:
-			inf=open('/OMM/data/futures/futures_fix.log', "r")
-#			inf=open('/OMM/data/futures/ESFutures.log', "r")
+#			inf=open('/OMM/data/futures/futures_fix.log', "r")
+			inf=open('/OMM/data/futures/ESFutures.log', "r")
 			for line in inf:
 				sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
-#				time.sleep(.5)
+#			time.sleep(.01)
 			inf.close()
 			
 class McastClient:

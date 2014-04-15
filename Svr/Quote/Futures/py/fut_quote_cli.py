@@ -16,7 +16,7 @@ def client(str_):
 	sock.send(str_)
 	while 1:
 		recv_data = sock.recv(1024)  
-		print "recv data => \n [%s]" % (recv_data)
+		print "[%s]" % (recv_data)
 	sock.close()
 
 if __name__ == "__main__":
