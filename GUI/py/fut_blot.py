@@ -51,24 +51,40 @@ class FutQuoteThread(threading.Thread):
 		self.want_abort = 1 
 
 class FutBlotFrame(wx.Frame):
-	colLabels = ["bid", "ask"]
+	colLabels = ["time", "size", "bid", "ask", "size", "time"]
+	rowColors = ["rosybrown", "sandybrown", "goldenrod", "darkgoldenrod", "peru", \
+				"chocolate", "saddlebrown", "sienna", "brown", "maroon"]
+#	rowColors = ["lavender", "thistle", "plum", "violet", "orchid", \
+#				"fuchsia", "magenta", "mediumorchid", "blueviolet", "darkviolet"]
 	rows = 10
-	cols = 2
+	cols = 6
 	def __init__(self, parent_, id_):
 		wx.Frame.__init__(self, parent_, id_, title="Futures Level 2",size=(600,300))
 		self.grid = wx.grid.Grid(self)
 		self.grid.CreateGrid(self.rows, self.cols)
+		self.grid.EnableGridLines(False)
+		self.grid.SetRowLabelSize(0)
+		self.grid.SetDefaultCellBackgroundColour("black")
 		for col in range(self.cols):
 			self.grid.SetColLabelValue(col, self.colLabels[col])
 		for row in range(self.rows):
 			for col in range(self.cols):
+				self.grid.SetCellTextColour(row, col, "springgreen")
+				self.grid.SetCellBackgroundColour(row, col, self.rowColors[row])
 				self.grid.SetCellValue(row, col, "(%s,%s)" % (row, col))
 		EVT_RESULT(self, self.OnResult)
 		self.fquote_thread = FutQuoteThread(self)
 
 	def OnResult(self, event_):
 		for order in event_.data:
-			self.grid.SetCellValue(order.price_level-1, order.entry_type, "%.3f" % order.price)
+			if order.entry_type == 0: 
+				self.grid.SetCellValue(order.price_level-1, 2, "%.2f" % order.price)
+				self.grid.SetCellValue(order.price_level-1, 1, "%d" % order.quantity)
+				self.grid.SetCellValue(order.price_level-1, 0, "%s" % sec2TimeStr(order.entry_time))
+			else:
+				self.grid.SetCellValue(order.price_level-1, 3, "%.2f" % order.price)
+				self.grid.SetCellValue(order.price_level-1, 4, "%d" % order.quantity)
+				self.grid.SetCellValue(order.price_level-1, 5, "%s" % sec2TimeStr(order.entry_time))
 		
 class MainApp(wx.App):
 	def OnInit(self):

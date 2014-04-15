@@ -24,7 +24,7 @@ class McastServer:
 			inf=open('/OMM/data/futures/ESFutures.log', "r")
 			for line in inf:
 				sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
-#			time.sleep(.01)
+			time.sleep(.2)
 			inf.close()
 			
 class McastClient:
