@@ -25,9 +25,11 @@ def timeStr2Sec(str_): # time string format HH:MM::SS e.g. 14:53:01
 	try: 
 		s = int(ll[0]) * 3600 + int(ll[1]) * 60 + int(ll[2])
 	except ValueError: 
-		print "## timeStr2Sec VALUEERROR CAUGHT for $$", str_, "$$"
+		pass
+#		print "## timeStr2Sec VALUEERROR CAUGHT for $$", str_, "$$"
 	except IndexError: 
-		print "## timeStr2Sec INDEXERROR CAUGHT for $$", str_, "$$"
+		pass
+#		print "## timeStr2Sec INDEXERROR CAUGHT for $$", str_, "$$"
 	else:
 		return s
 
@@ -81,9 +83,11 @@ class FixMsg:
 						int(ss[3]), float(ss[4]), int(ss[5]), \
 						int(ss[6]), 1, int(ss[7])) )
 			except ValueError: 
-				print "## FixMsg.str2order VALUEERROR CAUGHT for $$", str_, "$$"
+				pass
+#				print "## FixMsg.str2order VALUEERROR CAUGHT for $$", str_, "$$"
 			except IndexError: 
-				print "## FixMsg.str2order INDEXERROR CAUGHT for $$", str_, "$$"
+				pass
+#				print "## FixMsg.str2order INDEXERROR CAUGHT for $$", str_, "$$"
 		return (orders, tail)
 
 class FixMsgParser: 
@@ -136,9 +140,11 @@ class FixMsgParser:
 						elif "1023=" in tag:
 							price_level = int(tag[5:])
 			except ValueError: 
-				print "##parse_fix_msg: ValueERROR CAUGHT $$", str_, "$$"
+				pass
+#				print "##parse_fix_msg: ValueERROR CAUGHT $$", str_, "$$"
 			except IndexError: 
-				print "##parse_fix_msg: IndexERROR CAUGHT $$", str_, "$$"
+				pass
+#				print "##parse_fix_msg: IndexERROR CAUGHT $$", str_, "$$"
 			if (entry_type == 0 or entry_type == 1):
 #and price_level == 1: open level 2 quotes temporarily, for options, we only need top level price. 
 # Select 269=0/1, 279=1 and 1023=1, i.e. select top level bid/ask orders.

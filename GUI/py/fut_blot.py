@@ -4,23 +4,19 @@ import threading
 import time
 from fut_quote_cli import *
 
-EVT_RESULT_ID = wx.NewId()
 
-def EVT_RESULT(win_, func_):
-## Define result event 
-	win_.Connect(-1, -1, EVT_RESULT_ID, func_)
-
-class ResultEvent(wx.PyEvent):
-	def __init__(self, data_):
+class DataEvent(wx.PyEvent):
+	def __init__(self, wxeid_, data_):
 		wx.PyEvent.__init__(self)
-		self.SetEventType(EVT_RESULT_ID)
+		self.SetEventType(wxeid_)
 		self.data = data_
 
 class FutQuoteThread(threading.Thread):
 	def __init__(self, notify_win_):
 		threading.Thread.__init__(self)
+		self.wxeid = wx.NewId()
 		self.notify_win = notify_win_
-		self.want_abort = 0 
+		self.stop   = threading.Event()
 		fut_attr    = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
 		exp_date    = 20140321
 		self.fid    = fut_attr.exp_date_dict[exp_date].fid
@@ -30,11 +26,7 @@ class FutQuoteThread(threading.Thread):
 	
 	def run(self):
 		self.fquote.sock.send(str(self.fid))
-		while 1: 
-			if self.want_abort:
-				wx.PostEvent(self.notify_win, ResultEvent(None))
-				self.fquote.sock.close()
-				return
+		while not self.stop.is_set():
 			recv_data = self.fquote.sock.recv(1024)
 #			print "recv data=>", recv_data
 			tail = "" 
@@ -44,11 +36,12 @@ class FutQuoteThread(threading.Thread):
 				(orders, tail) = FixMsg.str2order(recv_data) 
 				if len(orders) > 0:
 					print len(orders), "orders posted"
-					wx.PostEvent(self.notify_win, ResultEvent(orders))
+					wx.PostEvent(self.notify_win, DataEvent(self.wxeid, orders))
+		self.fquote.sock.shutdown(socket.SHUT_RDWR)
 		self.fquote.sock.close() 
 		
-	def abort(self):
-		self.want_abort = 1 
+	def shutdown(self):
+		self.stop.set() 
 
 class FutBlotFrame(wx.Frame):
 	colLabels = ["time", "size", "bid", "ask", "size", "time"]
@@ -60,6 +53,7 @@ class FutBlotFrame(wx.Frame):
 	cols = 6
 	def __init__(self, parent_, id_):
 		wx.Frame.__init__(self, parent_, id_, title="Futures Level 2",size=(600,300))
+		self.Bind(wx.EVT_CLOSE, self.onClose)
 		self.grid = wx.grid.Grid(self)
 		self.grid.CreateGrid(self.rows, self.cols)
 		self.grid.EnableGridLines(False)
@@ -72,10 +66,10 @@ class FutBlotFrame(wx.Frame):
 				self.grid.SetCellTextColour(row, col, "springgreen")
 				self.grid.SetCellBackgroundColour(row, col, self.rowColors[row])
 				self.grid.SetCellValue(row, col, "(%s,%s)" % (row, col))
-		EVT_RESULT(self, self.OnResult)
 		self.fquote_thread = FutQuoteThread(self)
+		self.Connect(-1, -1, self.fquote_thread.wxeid, self.onData)
 
-	def OnResult(self, event_):
+	def onData(self, event_):
 		for order in event_.data:
 			if order.entry_type == 0: 
 				self.grid.SetCellValue(order.price_level-1, 2, "%.2f" % order.price)
@@ -85,6 +79,12 @@ class FutBlotFrame(wx.Frame):
 				self.grid.SetCellValue(order.price_level-1, 3, "%.2f" % order.price)
 				self.grid.SetCellValue(order.price_level-1, 4, "%d" % order.quantity)
 				self.grid.SetCellValue(order.price_level-1, 5, "%s" % sec2TimeStr(order.entry_time))
+	
+	def onClose(self, event_):
+		print "Frame closed!"
+		self.fquote_thread.shutdown()
+		self.fquote_thread.join()
+		self.Destroy()
 		
 class MainApp(wx.App):
 	def OnInit(self):

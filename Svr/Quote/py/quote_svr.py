@@ -76,13 +76,13 @@ class TCPThread(threading.Thread):
 		self.svr     = svr_
 		self.cliSock = cliSock_
 		self.que     = None
-		self.running = True
+		self.stop    = threading.Event()
 		print "TCPThread is running..."
 
 	def run(self):
 		ts1 = time.time()
 		self.que = self.svr.sock_dict[self.cliSock].que
-		while 1:
+		while not self.stop.is_set():
 			strData = self.que.get() 
 			try:
 				self.cliSock.send(strData)
@@ -90,6 +90,11 @@ class TCPThread(threading.Thread):
 				self.cliSock.close()
 #			else: 
 #				print "data sending to GUI", strData
+#		self.cliSock.shutdown(socket.SHUT_RDWR)
+		self.cliSock.close()
+
+	def shutdown(self):
+		self.stop.set()
 
 class QuoteSvr(object):
 	def __init__(self, HOST_='localhost', PORT_=22085):
@@ -134,7 +139,7 @@ class QuoteSvr(object):
 				else:
 					if sock in self.cliSocks:
 						data = sock.recv(1024)
-						if data:
+						if data != "":
 							print 'received %s from %s' %(data, sock.getpeername()) 
 							oids = data.strip().split(',') # split by comma 
 							oids = map(int, oids)
@@ -145,20 +150,27 @@ class QuoteSvr(object):
 						else: ## without data is a disconnection 
 							print "closing connection from", cliAddr
 							inputs.remove(sock)
-							sock.close() 
-							self.sock_dict_lock.acquire()
-							del self.sock_dict[sock] 
-							self.sock_dict_dirty = True
-							self.sock_dict_lock.release()
+							self.cliSocks.remove(sock)
+							self.shutdown_clithread(sock)
 			for sock in exceptional: 
-				print "exceptional condiction for", sock.getpeername()
+				print "exceptional condition for", sock.getpeername()
 				inputs.remove(sock)
-				s.close()
+				self.shutdown_clithread(sock)
 
 		for t1 in self.threads:
-			t1.join()
+			if t1.isAlive():
+				t1.join()
 		return 
 
+	def shutdown_clithread(self, cliSock_):
+		cliThread = self.sock_dict[cliSock_].thread
+		cliThread.shutdown()
+		cliThread.join()
+		self.sock_dict_lock.acquire()
+		del self.sock_dict[cliSock_] 
+		self.sock_dict_dirty = True
+		self.sock_dict_lock.release()
+		
 if __name__ == "__main__":
 	try:
 		svr = QuoteSvr()
