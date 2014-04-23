@@ -44,6 +44,8 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 				fixParser = FixMsgParser(str_=data)
 				for order in fixParser.orders: 
 					if order.sid in self.oid_ques_dict.keys():
+						if order.price_level != 1: 
+							continue
 						strData = order.pack2str()
 #						print "queue data:", strData
 						ques = self.oid_ques_dict[order.sid]
