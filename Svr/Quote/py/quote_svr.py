@@ -13,6 +13,7 @@ import time
 import Queue 
 import select 
 import mcast 
+import errno
 
 class Channel: 
 	def __init__(self, sock_, thread_, oids_=[], max_size_=10000):
@@ -86,8 +87,12 @@ class TCPThread(threading.Thread):
 			strData = self.que.get() 
 			try:
 				self.cliSock.send(strData)
-			except socket.error:
-				self.cliSock.close()
+			except socket.error as e:
+#				if e.errno != errno.ECONNRESET:
+#					raise
+				print "####TCPThread exception caught %s" %e 
+				return 
+#				self.cliSock.close()
 #			else: 
 #				print "data sending to GUI", strData
 #		self.cliSock.shutdown(socket.SHUT_RDWR)
@@ -124,6 +129,7 @@ class QuoteSvr(object):
 			readable, writable, exceptional = select.select(inputs, outputs, inputs, 1) 
 			if not (readable or writable or exceptional):
 #				print "select timed out"
+				print "select inputs", inputs
 				continue
 			for sock in readable: 
 				if sock is self.svrSock:
@@ -138,20 +144,29 @@ class QuoteSvr(object):
 					cliThread.start() 
 				else:
 					if sock in self.cliSocks:
-						data = sock.recv(1024)
-						if data != "":
-							print 'received %s from %s' %(data, sock.getpeername()) 
-							oids = data.strip().split(',') # split by comma 
-							oids = map(int, oids)
-							self.sock_dict_lock.acquire()
-							self.sock_dict[sock].oids = oids; 
-							self.sock_dict_dirty = True; 
-							self.sock_dict_lock.release()
-						else: ## without data is a disconnection 
-							print "closing connection from", cliAddr
+						try: 
+							data = sock.recv(1024)
+						except socket.error as e: 
+#							if e.errno != errno.ECONNRESET:
+#								raise
+							print "closing connection from %s, %s" %cliAddr %e
 							inputs.remove(sock)
 							self.cliSocks.remove(sock)
 							self.shutdown_clithread(sock)
+						else: 	
+							if data != "":
+								print 'received %s from %s' %(data, sock.getpeername()) 
+								oids = data.strip().split(',') # split by comma 
+								oids = map(int, oids)
+								self.sock_dict_lock.acquire()
+								self.sock_dict[sock].oids = oids; 
+								self.sock_dict_dirty = True; 
+								self.sock_dict_lock.release()
+							else: ## without data is a disconnection 
+								print "closing connection from", cliAddr
+								inputs.remove(sock)
+								self.cliSocks.remove(sock)
+								self.shutdown_clithread(sock)
 			for sock in exceptional: 
 				print "exceptional condition for", sock.getpeername()
 				inputs.remove(sock)
