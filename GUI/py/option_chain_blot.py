@@ -1,9 +1,9 @@
 import wx
 import wx.grid
-import wx.lib.scrolledpanel as scrolled 
 import threading
 import time
 from fut_quote_cli import *
+from opt_quote_cli import *
 
 class OptionChainPanel(wx.Panel):
 	fut_col_labels = ["time", "size", "bid", "ask", "size", "time"]
@@ -20,26 +20,28 @@ class OptionChainPanel(wx.Panel):
 					"time", "size", "bid", "ask", "size", "time"]
 	opt_row_colors = ["rosybrown", "sandybrown", "goldenrod", "darkgoldenrod", "peru", \
 			"chocolate", "saddlebrown", "sienna", "brown", "maroon"]
-#	rowColors = ["lavender", "thistle", "plum", "violet", "orchid", \
-#				"fuchsia", "magenta", "mediumorchid", "blueviolet", "darkviolet"]
 	opt_rows = 250
 	opt_cols = 13
 	opt_exp_dates = ["20140321", "20140620"]
 	
 	def __init__(self, parent_, id_):
 		wx.Panel.__init__(self, parent_, id_)
-		self.fquote_thread = None
-		self.fut_exp_date = ""
-		self.opt_exp_date = ""
-		self.createControls()
+		self.fqt_trd = None
+		self.oqt_trd = None
+		self.oid_dict = {}
+		self.K_dict = {}
+		self.fut_exp_date = self.fut_exp_dates[0]
+		self.opt_exp_date = self.opt_exp_dates[0]
+		self.createCtrls()
 		self.bindEvents()
 		self.doLayout()
 
-	def createControls(self):
-		self.label = wx.StaticText(self, label="Expiration Date")
-		self.combBox = wx.ComboBox(self, choices=self.fut_exp_dates, style=wx.CB_DROPDOWN)
-		self.connBut = wx.Button(self, label="Connect") 
-		self.disConnBut = wx.Button(self, label="Disconnect") 
+	def createCtrls(self):
+		self.fut_label = wx.StaticText(self, label="Futures exp date")
+		self.fut_combBox = wx.ComboBox(self, value=self.fut_exp_dates[0], \
+							choices=self.fut_exp_dates, style=wx.CB_DROPDOWN)
+		self.fut_connBut = wx.Button(self, label="Connect") 
+		self.fut_stopBut = wx.Button(self, label="Stop") 
 		self.fut_grid = wx.grid.Grid(self)
 		self.fut_grid.CreateGrid(self.fut_rows, self.fut_cols)
 		self.fut_grid.EnableGridLines(False)
@@ -53,6 +55,11 @@ class OptionChainPanel(wx.Panel):
 				self.fut_grid.SetCellBackgroundColour(row, col, self.fut_row_colors[row])
 				self.fut_grid.SetCellValue(row, col, "(%s,%s)" % (row, col))
 
+		self.opt_label = wx.StaticText(self, label="Options exp date")
+		self.opt_combBox = wx.ComboBox(self, value=self.opt_exp_dates[0], \
+							choices=self.opt_exp_dates, style=wx.CB_DROPDOWN)
+		self.opt_connBut = wx.Button(self, label="Connect") 
+		self.opt_stopBut = wx.Button(self, label="Stop") 
 		self.opt_grid = wx.grid.Grid(self)
 		self.opt_grid.CreateGrid(self.opt_rows, self.opt_cols)
 		self.opt_grid.EnableGridLines(False)
@@ -69,19 +76,30 @@ class OptionChainPanel(wx.Panel):
 	def bindEvents(self):
 		self.Bind(wx.EVT_CLOSE, self.onClose)
 #		self.combBox.Bind(wx.EVT_COMBOBOX, self.onExpDateSel)
-		self.combBox.Bind(wx.EVT_TEXT, self.onExpDateSel)
-		self.connBut.Bind(wx.EVT_BUTTON, self.onConnect)
-		self.disConnBut.Bind(wx.EVT_BUTTON, self.onDisConnect)
+		self.fut_combBox.Bind(wx.EVT_TEXT, self.onFutExpDateSel)
+		self.fut_connBut.Bind(wx.EVT_BUTTON, self.onFutConn)
+		self.fut_stopBut.Bind(wx.EVT_BUTTON, self.onFutStop)
+		self.opt_combBox.Bind(wx.EVT_TEXT, self.onOptExpDateSel)
+		self.opt_connBut.Bind(wx.EVT_BUTTON, self.onOptConn)
+		self.opt_stopBut.Bind(wx.EVT_BUTTON, self.onOptStop)
 
 	def doLayout(self):
 		fut_sizer = wx.BoxSizer(wx.HORIZONTAL)	
+		self.oid_dict = {}
 		fut_sizer.Add(self.fut_grid, 0, wx.EXPAND)
-		fut_sizer.Add(self.label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-		fut_sizer.Add(self.combBox, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-		fut_sizer.Add(self.connBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
-		fut_sizer.Add(self.disConnBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		fut_sizer.Add(self.fut_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		fut_sizer.Add(self.fut_combBox, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		fut_sizer.Add(self.fut_connBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		fut_sizer.Add(self.fut_stopBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
 		
+		opt_sizer1 = wx.BoxSizer(wx.HORIZONTAL)	
+		opt_sizer1.Add(self.opt_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		opt_sizer1.Add(self.opt_combBox, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		opt_sizer1.Add(self.opt_connBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		opt_sizer1.Add(self.opt_stopBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+
 		opt_sizer = wx.BoxSizer(wx.VERTICAL)
+		opt_sizer.Add(opt_sizer1, 0, wx.EXPAND)
 		opt_sizer.Add(self.opt_grid, 1, wx.EXPAND)
 
 		blot_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -90,27 +108,27 @@ class OptionChainPanel(wx.Panel):
 		blot_sizer.Add(opt_sizer, 1, wx.EXPAND)
 		self.SetSizer(blot_sizer)
 
-	def onExpDateSel(self, event_):
+	def onFutExpDateSel(self, event_):
 		print "expiration date selected:", event_.GetString()	
 		self.fut_exp_date = int(event_.GetString())
-		if self.fquote_thread != None:
-			self.fquote_thread.exp_date = self.fut_exp_date
-			self.fquote_thread.set_exp_date_changed()
+		if self.fqt_trd != None:
+			self.fqt_trd.exp_date = self.fut_exp_date
+			self.fqt_trd.set_exp_date_changed()
 
-	def onConnect(self, event_):
-		print "Connecting..."
-		if self.fquote_thread == None:
-			self.fquote_thread = FutQuoteThread(self, self.fut_exp_date)
-			self.Connect(-1, -1, self.fquote_thread.wxeid, self.onData)
+	def onFutConn(self, event_):
+		print "Connecting futures quote svr ..."
+		if self.fqt_trd == None:
+			self.fqt_trd = FutQuoteThread(self, self.fut_exp_date)
+			self.Connect(-1, -1, self.fqt_trd.wxeid, self.onFutData)
 	
-	def onDisConnect(self, event_=None): 
-		print "Disconnecting..."
-		if self.fquote_thread != None:
-			self.fquote_thread.shutdown()
-			self.fquote_thread.join()
-			self.fquote_thread = None
+	def onFutStop(self, event_=None): 
+		print "Disconnecting futures quote svr ..."
+		if self.fqt_trd != None:
+			self.fqt_trd.shutdown()
+			self.fqt_trd.join()
+			self.fqt_trd = None
 		
-	def onData(self, event_):
+	def onFutData(self, event_):
 		for order in event_.data:
 			if order.entry_type == 0: 
 				self.fut_grid.SetCellValue(order.price_level-1, 2, "%.2f" % order.price)
@@ -121,8 +139,60 @@ class OptionChainPanel(wx.Panel):
 				self.fut_grid.SetCellValue(order.price_level-1, 4, "%d" % order.quantity)
 				self.fut_grid.SetCellValue(order.price_level-1, 5, "%s" % sec2TimeStr(order.entry_time))
 	
+	def onOptExpDateSel(self, event_):
+		print "option expiration date selected:", event_.GetString()	
+		self.opt_exp_date = int(event_.GetString())
+		if self.oqt_trd != None:
+			self.oqt_trd.exp_date = self.opt_exp_date
+			self.oqt_trd.set_exp_date_changed()
+
+	def onOptConn(self, event_):
+		print "Connecting options quote svr ..."
+		if self.oqt_trd == None:
+			self.oqt_trd = OptQuoteThread(self, self.opt_exp_date)
+			self.Connect(-1, -1, self.oqt_trd.wxeid, self.onOptData)
+			self.oid_dict = self.oqt_trd.opt_attr_ps.oid_dict
+			Ks = sorted(self.oqt_trd.opt_attr_ps.K_set)
+			for idx, x in enumerate(Ks): 
+				self.K_dict[x] = idx
+	
+	def onOptStop(self, event_=None): 
+		print "Disconnecting options quote svr ..."
+		if self.oqt_trd != None:
+			self.oqt_trd.shutdown()
+			self.oqt_trd.join()
+			self.oqt_trd = None
+		
+	def onOptData(self, event_):
+		for order in event_.data:
+#			print "order received" 
+#			order.printout()
+			opt_attr = self.oid_dict[order.sid]
+			row = self.K_dict[opt_attr.strike]
+			self.opt_grid.SetCellValue(row, 6, "%.2f" % opt_attr.strike)
+			if opt_attr.cp_type == "P":  ##PUT 
+				if order.entry_type == 0: ## bid 
+					self.opt_grid.SetCellValue(row, 2, "%.2f" % order.price)
+					self.opt_grid.SetCellValue(row, 1, "%d" % order.quantity)
+					self.opt_grid.SetCellValue(row, 0, "%s" % sec2TimeStr(order.entry_time))
+				else:  ## ask 
+					self.opt_grid.SetCellValue(row, 3, "%.2f" % order.price)
+					self.opt_grid.SetCellValue(row, 4, "%d" % order.quantity)
+					self.opt_grid.SetCellValue(row, 5, "%s" % sec2TimeStr(order.entry_time))
+			else:  ## CALL
+				if order.entry_type == 0: ## bid 
+					self.opt_grid.SetCellValue(row, 9, "%.2f" % order.price)
+					self.opt_grid.SetCellValue(row, 8, "%d" % order.quantity)
+					self.opt_grid.SetCellValue(row, 7, "%s" % sec2TimeStr(order.entry_time))
+				else:  ## ask 
+					self.opt_grid.SetCellValue(row, 10, "%.2f" % order.price)
+					self.opt_grid.SetCellValue(row, 11, "%d" % order.quantity)
+					self.opt_grid.SetCellValue(row, 12, "%s" % sec2TimeStr(order.entry_time))
+
+
 	def onClose(self, event_=None):
-		self.onDisConnect()
+		self.onFutStop()
+		self.onOptStop()
 		self.Destroy()
 		print "Panel closed!"
 		

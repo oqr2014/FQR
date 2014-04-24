@@ -52,7 +52,7 @@ class FuturesAttrParser:
 			self.exp_date_dict[futures_attr.exp_date] = futures_attr
 
 if __name__ == "__main__":
-	futuresAttr = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
-	print futuresAttr.fid_dict 
-	print futuresAttr.exp_date_dict 
+	futAttrParser = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
+	print futAttrParser.fid_dict 
+	print futAttrParser.exp_date_dict 
 		

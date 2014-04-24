@@ -1,9 +1,10 @@
 #!/bin/bash
-#########################################################
-# this is a test program for multicasting fix msgs
-#########################################################
+#################################################################
+# Test program for multicasting fix msgs of futures
+#################################################################
 import socket
 import time
+from option_fix import *
 
 class McastServer:
 	def __init__(self, any_="0.0.0.0", sender_port_=1501, mcast_addr_="224.168.2.9", mcast_port_=1600):
@@ -16,14 +17,20 @@ class McastServer:
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 		#The sender is bound on (0.0.0.0:1501)
 		sock.bind((self.ANY, self.SENDER_PORT))
-		#Tell the kernel that we want to multicast and that the data is sent
+		#Tell kernel that we want to multicast and data is sent
 		#to everyone (255 is the level of multicasting)
 		sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
 		while 1:
-#			inf=open('/OMM/data/futures/futures_fix.log', "r")
 			inf=open('/OMM/data/futures/ESFutures.log', "r")
 			for line in inf:
-				sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
+				fixParser = FixMsgParser(str_=line)
+				isTopPrice = False
+				for order in fixParser.orders: 
+					if order.price_level == 1:
+						isTopPrice = True
+						break
+				if isTopPrice: ## only send top price level
+					sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
 #				time.sleep(.05)
 			inf.close()
 			

@@ -46,13 +46,13 @@ class FutDataEvent(wx.PyEvent):
 class FutQuoteThread(threading.Thread):
 	def __init__(self, notify_win_, exp_date_=20140321):
 		threading.Thread.__init__(self)
-		self.wxeid      = wx.NewId()
-		self.notify_win = notify_win_
-		self.stop       = threading.Event()
-		self.fut_attr   = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
-		self.exp_date   = exp_date_ 
+		self.wxeid       = wx.NewId()
+		self.notify_win  = notify_win_
+		self.stop        = threading.Event()
+		self.fut_attr_ps = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
+		self.exp_date    = exp_date_ 
 		self.exp_date_changed = threading.Event()
-		self.fid        = self.fut_attr.exp_date_dict[self.exp_date].fid
+		self.fid        = self.fut_attr_ps.exp_date_dict[self.exp_date].fid
 		self.fquote     = FutQuoteCli()
 #		self.setDaemon(True)
 		self.start()
@@ -80,8 +80,8 @@ class FutQuoteThread(threading.Thread):
 		self.stop.set() 
 	
 	def set_exp_date_changed(self):
-		if self.exp_date in self.fut_attr.exp_date_dict.keys(): 
-			self.fid  = self.fut_attr.exp_date_dict[self.exp_date].fid
+		if self.exp_date in self.fut_attr_ps.exp_date_dict.keys(): 
+			self.fid  = self.fut_attr_ps.exp_date_dict[self.exp_date].fid
 			self.exp_date_changed.set()
 		else:
 			print "####Error:exp_date not found:", str(self.exp_date)

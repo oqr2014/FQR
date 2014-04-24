@@ -26,7 +26,7 @@ class OptionAttr:
 class OptionAttrParser: 
 	def __init__(self, filename_=None, dirname_=None): 
 		self.oid_dict = {}
-#		self.strike_dict = {} // duplicate keys
+		self.K_set = set()
 
 		if filename_ is None: 
 			file_list = self.read_dir_file(dirname_)
@@ -60,11 +60,11 @@ class OptionAttrParser:
 			option_attr = OptionAttr(oid, strike, exp_date, cp_type, ex_style)
 #			option_attr.print_out()
 			self.oid_dict[option_attr.oid] = option_attr
-#			self.strike_dict[option_attr.strike] = option_attr
+			self.K_set.add(strike)
 
 if __name__ == "__main__":
-#	optionAttr = OptionAttrParser(dirname_="/OMM/data")
-	optionAttr = OptionAttrParser(filename_="/OMM/data/ES_20140321.xml")
-	print optionAttr.oid_dict 
+#	optAttrParser = OptionAttrParser(dirname_="/OMM/data")
+	optAttrParser = OptionAttrParser(filename_="/OMM/data/ES_20140321.xml")
+	print optAttrParser.oid_dict 
 #	print optionAttr.strike_dict
 		

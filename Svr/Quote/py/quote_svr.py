@@ -12,7 +12,7 @@ import threading
 import time
 import Queue 
 import select 
-import mcast 
+import mcast
 import errno
 
 class Channel: 
@@ -24,9 +24,9 @@ class Channel:
 	
 class McastQuoteThread(threading.Thread, mcast.McastClient): 
 # Receiving quotes from outside quote server and adding the data into its Queue
-	def __init__(self, svr_): 
+	def __init__(self, svr_, MCAST_ADDR_, MCAST_PORT_): 
 		threading.Thread.__init__(self)
-		mcast.McastClient.__init__(self)
+		mcast.McastClient.__init__(self, mcast_addr_=MCAST_ADDR_, mcast_port_=MCAST_PORT_)
 		self.svr = svr_
 		self.oid_ques_dict = {}
 			
@@ -69,6 +69,7 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 					else:
 						self.oid_ques_dict[oid] = [self.svr.sock_dict[sock].que]
 			self.svr.sock_dict_dirty = False
+			print "oid_ques_dict", self.oid_ques_dict
 		self.svr.sock_dict_lock.release()
 
 class TCPThread(threading.Thread):
@@ -104,10 +105,12 @@ class TCPThread(threading.Thread):
 		self.stop.set()
 
 class QuoteSvr(object):
-	def __init__(self, HOST_='localhost', PORT_=22085):
+	def __init__(self, HOST_='localhost', PORT_=22085, MCAST_ADDR_="224.168.2.9", MCAST_PORT_=1600):
 		self.HOST     = HOST_
 		self.PORT     = PORT_
 		self.ADDRESS  = (self.HOST, self.PORT)
+		self.MCAST_ADDR = MCAST_ADDR_
+		self.MCAST_PORT = MCAST_PORT_
 		self.cliSocks = [] 
 		self.threads  = []
 		self.sock_dict = {}  ## socket:Channel 
@@ -116,7 +119,7 @@ class QuoteSvr(object):
 
 	def run(self):
 		self.running = True
-		mcastThread = McastQuoteThread(self) 
+		mcastThread = McastQuoteThread(self, MCAST_ADDR_=self.MCAST_ADDR, MCAST_PORT_=self.MCAST_PORT) 
 		mcastThread.start()
 		self.threads.append(mcastThread)
 # client socket
@@ -147,7 +150,7 @@ class QuoteSvr(object):
 				else:
 					if sock in self.cliSocks:
 						try: 
-							data = sock.recv(1024)
+							data = sock.recv(8192)
 						except socket.error as e: 
 #							if e.errno != errno.ECONNRESET:
 #								raise

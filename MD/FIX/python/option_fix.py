@@ -20,7 +20,7 @@
 
 import os 
 
-def timeStr2Sec(str_): # time string format HH:MM::SS e.g. 14:53:01 
+def timeStr2Sec(str_): # time string format HH:MM:SS e.g. 14:53:01 
 	ll = str_.split(':')
 	try: 
 		s = int(ll[0]) * 3600 + int(ll[1]) * 60 + int(ll[2])
@@ -105,6 +105,7 @@ class FixMsgParser:
 	def parse_fix_msg(self, str_): 
 		trades=str_.split("\x01279=")
 		send_time = ""
+		entry_time = "00:00:00"
 		trade_date = 0 
 		for i, trade in enumerate(trades):
 			sid = 0
