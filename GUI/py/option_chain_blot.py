@@ -11,15 +11,16 @@ class OptionChainPanel(wx.Panel):
 #			"chocolate", "saddlebrown", "sienna", "brown", "maroon"]
 #	rowColors = ["lavender", "thistle", "plum", "violet", "orchid", \
 #				"fuchsia", "magenta", "mediumorchid", "blueviolet", "darkviolet"]
-	fut_row_colors = ["black"]
+	fut_row_clrs = ["black"]
 	fut_rows = 1
 	fut_cols = 6
 	fut_exp_dates = ["20140321", "20140620"]
 	
 	opt_col_labels = ["time", "size", "bid", "ask", "size", "time", "strike", \
 					"time", "size", "bid", "ask", "size", "time"]
-	opt_row_colors = ["rosybrown", "sandybrown", "goldenrod", "darkgoldenrod", "peru", \
-			"chocolate", "saddlebrown", "sienna", "brown", "maroon"]
+#	opt_row_clrs = ["cornsilk", "blanchedalmond", "bisque", "navajowhite", "wheat", "burlywood", "tan", "rosybrown", \
+	opt_row_clrs = ["rosybrown", "sandybrown", "goldenrod", "darkgoldenrod", \
+				"peru", "chocolate", "saddlebrown", "sienna", "brown", "maroon"]
 	opt_rows = 250
 	opt_cols = 13
 	opt_exp_dates = ["20140321", "20140620"]
@@ -52,8 +53,8 @@ class OptionChainPanel(wx.Panel):
 		for row in range(self.fut_rows):
 			for col in range(self.fut_cols):
 				self.fut_grid.SetCellTextColour(row, col, "springgreen")
-				self.fut_grid.SetCellBackgroundColour(row, col, self.fut_row_colors[row])
-				self.fut_grid.SetCellValue(row, col, "(%s,%s)" % (row, col))
+				self.fut_grid.SetCellBackgroundColour(row, col, self.fut_row_clrs[row])
+#				self.fut_grid.SetCellValue(row, col, "(%s,%s)" % (row, col))
 
 		self.opt_label = wx.StaticText(self, label="Options exp date")
 		self.opt_combBox = wx.ComboBox(self, value=self.opt_exp_dates[0], \
@@ -69,9 +70,15 @@ class OptionChainPanel(wx.Panel):
 			self.opt_grid.SetColLabelValue(col, self.opt_col_labels[col])
 		for row in range(self.opt_rows):
 			for col in range(self.opt_cols):
-				self.opt_grid.SetCellTextColour(row, col, "springgreen")
-				self.opt_grid.SetCellBackgroundColour(row, col, "black")
-				self.opt_grid.SetCellValue(row, col, "(%s,%s)" % (row, col))
+				if col == 6:
+					self.opt_grid.SetCellTextColour(row, col, "springgreen")
+				else: 
+					self.opt_grid.SetCellTextColour(row, col, "black")
+				if col == 6: 
+					self.opt_grid.SetCellBackgroundColour(row, col, "black")
+				else:
+					self.opt_grid.SetCellBackgroundColour(row, col, self.opt_row_clrs[row%len(self.opt_row_clrs)])
+#				self.opt_grid.SetCellValue(row, col, "(%s,%s)" % (row, col))
 		
 	def bindEvents(self):
 		self.Bind(wx.EVT_CLOSE, self.onClose)

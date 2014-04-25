@@ -56,7 +56,7 @@ class McastClient:
 	def run(self):
 		while 1:
 			try:
-				data, addr = self.sock.recvfrom(1024)
+				data, addr = self.sock.recvfrom(8192)
 			except socket.error, (val, msg):
 #				print "socket.error caught", val, msg
 				pass

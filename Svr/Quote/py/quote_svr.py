@@ -38,7 +38,7 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 				self.update_oid_que()
 				ts1 = time.time() 
 			try:
-				data, addr = self.sock.recvfrom(1024)
+				data, addr = self.sock.recvfrom(8192)
 #				print "FROM: ", addr
 #				print "DATA: ", data
 				fixParser = FixMsgParser(str_=data)
@@ -69,7 +69,7 @@ class McastQuoteThread(threading.Thread, mcast.McastClient):
 					else:
 						self.oid_ques_dict[oid] = [self.svr.sock_dict[sock].que]
 			self.svr.sock_dict_dirty = False
-			print "oid_ques_dict", self.oid_ques_dict
+#			print "oid_ques_dict", self.oid_ques_dict
 		self.svr.sock_dict_lock.release()
 
 class TCPThread(threading.Thread):
@@ -150,7 +150,19 @@ class QuoteSvr(object):
 				else:
 					if sock in self.cliSocks:
 						try: 
-							data = sock.recv(8192)
+							data = ""
+							while 1: 
+								recv = sock.recv(4096)
+								if recv == "": 
+									break
+								idx = recv.find('\x03') 
+								if idx != -1:
+									data += recv[:idx]
+									if idx < len(recv)-1: 
+										print "### ERROR: some unprocessed data", recv[idx+1:]
+									break
+								data += recv
+
 						except socket.error as e: 
 #							if e.errno != errno.ECONNRESET:
 #								raise

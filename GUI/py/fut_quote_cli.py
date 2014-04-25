@@ -24,10 +24,10 @@ class FutQuoteCli:
 		
 	def run(self):
 		print "sending data => [%s]" % (self.sfid)
-		self.sock.send(self.sfid)
+		self.sock.send(self.sfid+'\x03')
 		tail = ""
 		while 1:
-			recv_data = self.sock.recv(1024)  
+			recv_data = self.sock.recv(4096)  
 			print "[%s]" % (recv_data)
 			if len(recv_data) > 0:
 				recv_data = tail + recv_data
@@ -57,13 +57,13 @@ class FutQuoteThread(threading.Thread):
 		self.start()
 	
 	def run(self):
-		self.fquote.sock.send(str(self.fid))
+		self.fquote.sock.send(str(self.fid)+'\x03')
 		tail = "" 
 		while not self.stop.is_set():
 			if self.exp_date_changed.is_set():
-				self.fquote.sock.send(str(self.fid))
+				self.fquote.sock.send(str(self.fid)+'\x03')
 				self.exp_date_changed.clear()
-			recv_data = self.fquote.sock.recv(1024)
+			recv_data = self.fquote.sock.recv(4096)
 #			print "recv data=>", recv_data
 			if len(recv_data) > 0:
 				recv_data = tail + recv_data
