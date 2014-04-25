@@ -30,8 +30,8 @@ class OptionChainPanel(wx.Panel):
 		self.oqt_trd = None
 		self.oid_dict = {}
 		self.K_dict = {}
-		self.fut_exp_date = self.fut_exp_dates[0]
-		self.opt_exp_date = self.opt_exp_dates[0]
+		self.fut_exp_date = int(self.fut_exp_dates[0])
+		self.opt_exp_date = int(self.opt_exp_dates[0])
 		self.createCtrls()
 		self.bindEvents()
 		self.doLayout()
@@ -167,6 +167,10 @@ class OptionChainPanel(wx.Panel):
 		for order in event_.data:
 #			print "order received" 
 #			order.printout()
+			if not order.sid in self.oid_dict.keys(): 
+				print "##### onOptData Error, order not found: "
+				order.printout()
+				continue 
 			opt_attr = self.oid_dict[order.sid]
 			row = self.K_dict[opt_attr.strike]
 			self.opt_grid.SetCellValue(row, 6, "%.2f" % opt_attr.strike)

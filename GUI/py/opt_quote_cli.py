@@ -24,13 +24,12 @@ class OptQuoteCli:
 	def run(self):
 		print "sending data => [%s]" % (self.sfid)
 		self.sock.send(self.sfid)
+		tail = ""
 		while 1:
 			recv_data = self.sock.recv(1024)  
 			print "[%s]" % (recv_data)
-			tail = ""
 			if len(recv_data) > 0:
-				if len(tail) > 0:
-					recv_data += tail
+				recv_data = tail + recv_data
 				(orders, tail) = FixMsg.str2order(recv_data)
 			print "[%s]" % (recv_data)
 		self.sock.close()
@@ -57,16 +56,15 @@ class OptQuoteThread(threading.Thread):
 	
 	def run(self):
 		self.oquote.sock.send(",".join(map(str,self.ids)))
+		tail = "" 
 		while not self.stop.is_set():
 			if self.exp_date_changed.is_set():
 				self.oquote.sock.send(",".join(self.ids))
 				self.exp_date_changed.clear()
 			recv_data = self.oquote.sock.recv(1024)
 #			print "recv data=>", recv_data
-			tail = "" 
 			if len(recv_data) > 0:
-				if len(tail) > 0: 
-					recv_data += tail 
+				recv_data = tail + recv_data
 				(orders, tail) = FixMsg.str2order(recv_data) 
 				if len(orders) > 0:
 #					print len(orders), "orders posted"
