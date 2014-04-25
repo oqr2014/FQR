@@ -19,7 +19,7 @@ class McastServer:
 		sock.bind((self.ANY, self.SENDER_PORT))
 		#Tell kernel that we want to multicast and data is sent
 		#to everyone (255 is the level of multicasting)
-		sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
+		sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
 		while 1:
 			inf=open('/OMM/data/futures/ESFutures.log', "r")
 			for line in inf:
@@ -45,7 +45,7 @@ class McastClient:
 		#Bind to the port that we know will receive multicast data
 		self.sock.bind((self.ANY, self.MCAST_PORT))
 		#tell the kernel that we are a multicast socket
-		self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
+		self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
 		#Tell the kernel that we want to add ourselves to a multicast group
 		#The address for the multicast group is the third param
 		status = self.sock.setsockopt(socket.IPPROTO_IP,
