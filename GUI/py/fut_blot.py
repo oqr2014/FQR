@@ -1,3 +1,7 @@
+#!/usr/bin/python 
+###############################
+# Level 2 futures blotter 
+###############################
 import wx
 import wx.grid
 import threading

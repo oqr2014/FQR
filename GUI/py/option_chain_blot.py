@@ -7,8 +7,6 @@ from opt_quote_cli import *
 
 class OptionChainPanel(wx.Panel):
 	fut_col_labels = ["time", "size", "bid", "ask", "size", "time"]
-#	rowColors = ["rosybrown", "sandybrown", "goldenrod", "darkgoldenrod", "peru", \
-#			"chocolate", "saddlebrown", "sienna", "brown", "maroon"]
 #	rowColors = ["lavender", "thistle", "plum", "violet", "orchid", \
 #				"fuchsia", "magenta", "mediumorchid", "blueviolet", "darkviolet"]
 	fut_row_clrs = ["black"]
