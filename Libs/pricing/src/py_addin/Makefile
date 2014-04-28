@@ -22,12 +22,12 @@ REL_OBJS      = \
 	$(REL_DLODIR)/py_am_option.o  \
 	$(REL_DLODIR)/py_utility.o  \
 
-INC       = -I/usr/local/boost_1_53_0/include/boost-1_53 -I/usr/include/python2.7
+INC       = -I/usr/include -I/usr/include/python2.7
 DBG_CPPFLAGS  = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
-LIBPATH = -L/usr/local/boost_1_53_0/lib -L/usr/local/lib -L/usr/lib/python2.7/config
-DBG_LIBS      = $(LIBPATH) -lboost_python-gcc46-mt-d-1_53 -lQuantLib -loqr_d -lpython2.7
+LIBPATH = -L/usr/lib -L/usr/local/lib -L/usr/lib/python2.7/config
+DBG_LIBS      = $(LIBPATH) -lboost_python-mt-py27 -lQuantLib -loqr_d -lpython2.7
 REL_CPPFLAGS  = -O3 -pthread -fPIC $(INC)
-REL_LIBS      = $(LIBPATH) -lboost_python-gcc46-mt-1_53 -lQuantLib -loqr -lpython2.7
+REL_LIBS      = $(LIBPATH) -lboost_python-mt-py27 -lQuantLib -loqr -lpython2.7
 CFLAGS    = -fpermissive -shared -rdynamic
 
 all: $(DBG_DLODIR)/$(DBG_DLONAME) $(REL_DLODIR)/$(REL_DLONAME)

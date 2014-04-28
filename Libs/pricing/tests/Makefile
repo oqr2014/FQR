@@ -11,7 +11,7 @@ REL_SONAME    = test_option
 REL_OBJS      = \
 	$(REL_SODIR)/test_option.o \
 
-INC       = -I/usr/local/boost_1_53_0/include/boost-1_53
+INC       = -I/usr/local/include -I/usr/include
 DBG_CPPFLAGS  = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
 REL_CPPFLAGS  = -O3 -pthread -fPIC $(INC)
 DBG_LIBS  = -lQuantLib -loqr_d

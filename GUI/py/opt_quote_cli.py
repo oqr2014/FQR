@@ -56,7 +56,7 @@ class OptQuoteThread(threading.Thread):
 				recv_data = tail + recv_data
 				(orders, tail) = FixMsg.str2order(recv_data) 
 				if len(orders) > 0:
-#					print len(orders), "orders posted"
+#					print len(orders), "option orders posted"
 					wx.PostEvent(self.notify_win, OptDataEvent(self.wxeid, orders))
 #		self.fquote.sock.shutdown(socket.SHUT_RDWR)
 		self.oquote.sock.close() 

@@ -69,8 +69,9 @@ class FutQuoteThread(threading.Thread):
 				recv_data = tail + recv_data
 				(orders, tail) = FixMsg.str2order(recv_data) 
 				if len(orders) > 0:
-#					print len(orders), "orders posted"
+#					print len(orders), "futures orders posted" 
 					wx.PostEvent(self.notify_win, FutDataEvent(self.wxeid, orders))
+
 #		self.fquote.sock.shutdown(socket.SHUT_RDWR)
 		self.fquote.sock.close() 
 		
