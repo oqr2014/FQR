@@ -4,6 +4,7 @@ import threading
 import time
 from fut_quote_cli import *
 from opt_quote_cli import *
+from ivc import * 
 
 class OptionChainPanel(wx.Panel):
 	fut_col_labels = ["time", "size", "bid", "ask", "size", "time"]
@@ -23,8 +24,9 @@ class OptionChainPanel(wx.Panel):
 	opt_cols = 13
 	opt_exp_dates = ["20140321", "20140620"]
 	
-	def __init__(self, parent_, id_):
+	def __init__(self, parent_, id_, opt_data_):
 		wx.Panel.__init__(self, parent_, id_)
+		self.opt_data = opt_data_
 		self.fqt_trd = None
 		self.oqt_trd = None
 		self.oid_dict = {}
@@ -92,15 +94,22 @@ class OptionChainPanel(wx.Panel):
 		fut_sizer = wx.BoxSizer(wx.HORIZONTAL)	
 		self.oid_dict = {}
 		fut_sizer.Add(self.fut_grid, 0, wx.EXPAND)
+		fut_sizer.AddSpacer(20)
 		fut_sizer.Add(self.fut_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		fut_sizer.AddSpacer(10)
 		fut_sizer.Add(self.fut_combBox, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		fut_sizer.AddSpacer(20)
 		fut_sizer.Add(self.fut_connBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		fut_sizer.AddSpacer(20)
 		fut_sizer.Add(self.fut_stopBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
 		
 		opt_sizer1 = wx.BoxSizer(wx.HORIZONTAL)	
 		opt_sizer1.Add(self.opt_label, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		opt_sizer1.AddSpacer(10)
 		opt_sizer1.Add(self.opt_combBox, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		opt_sizer1.AddSpacer(20)
 		opt_sizer1.Add(self.opt_connBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
+		opt_sizer1.AddSpacer(20)
 		opt_sizer1.Add(self.opt_stopBut, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL)
 
 		opt_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -134,15 +143,20 @@ class OptionChainPanel(wx.Panel):
 			self.fqt_trd = None
 		
 	def onFutData(self, event_):
+		self.opt_data.fut_lock.acquire()
+		self.opt_data.fut_exp_date = self.fut_exp_date
 		for order in event_.data:
-			if order.entry_type == 0: 
+			if order.entry_type == 0: ## bid
 				self.fut_grid.SetCellValue(order.price_level-1, 2, "%.2f" % order.price)
 				self.fut_grid.SetCellValue(order.price_level-1, 1, "%d" % order.quantity)
 				self.fut_grid.SetCellValue(order.price_level-1, 0, "%s" % sec2TimeStr(order.entry_time))
-			else:
+				self.opt_data.fut_bid = order.price
+			else: ## ask
 				self.fut_grid.SetCellValue(order.price_level-1, 3, "%.2f" % order.price)
 				self.fut_grid.SetCellValue(order.price_level-1, 4, "%d" % order.quantity)
 				self.fut_grid.SetCellValue(order.price_level-1, 5, "%s" % sec2TimeStr(order.entry_time))
+				self.opt_data.fut_ask = order.price
+		self.opt_data.fut_lock.release()
 	
 	def onOptExpDateSel(self, event_):
 		print "option expiration date selected:", event_.GetString()	
@@ -169,6 +183,8 @@ class OptionChainPanel(wx.Panel):
 			self.oqt_trd = None
 		
 	def onOptData(self, event_):
+		self.opt_data.opt_lock.acquire()
+		self.opt_data.opt_exp_date = self.opt_exp_date
 		for order in event_.data:
 #			print "order received" 
 #			order.printout()
@@ -184,19 +200,24 @@ class OptionChainPanel(wx.Panel):
 					self.opt_grid.SetCellValue(row, 2, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 1, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 0, "%s" % sec2TimeStr(order.entry_time))
+					self.opt_data.put_K_bid_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="PUT")
 				else:  ## ask 
 					self.opt_grid.SetCellValue(row, 3, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 4, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 5, "%s" % sec2TimeStr(order.entry_time))
+					self.opt_data.put_K_ask_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="PUT")
 			else:  ## CALL
 				if order.entry_type == 0: ## bid 
 					self.opt_grid.SetCellValue(row, 9, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 8, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 7, "%s" % sec2TimeStr(order.entry_time))
+					self.opt_data.call_K_bid_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="CALL")
 				else:  ## ask 
 					self.opt_grid.SetCellValue(row, 10, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 11, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 12, "%s" % sec2TimeStr(order.entry_time))
+					self.opt_data.call_K_ask_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="CALL")
+		self.opt_data.opt_lock.release()
 
 
 	def onClose(self, event_=None):
@@ -206,10 +227,10 @@ class OptionChainPanel(wx.Panel):
 		print "Panel closed!"
 		
 class OptionChainFrame(wx.Frame):
-	def __init__(self, parent_, id_, title_="Option Chain"):
-		wx.Frame.__init__(self, parent_, id_, title_)
+	def __init__(self, parent_, id_, title_="Option Chain", pos_=(100, 100), opt_data_=None):
+		wx.Frame.__init__(self, parent_, id_, title_, pos=pos_)
 		self.Bind(wx.EVT_CLOSE, self.onClose)
-		self.panel = OptionChainPanel(self, -1)
+		self.panel = OptionChainPanel(self, -1, opt_data_)
 #		sizer = wx.BoxSizer(wx.VERTICAL)
 #		sizer.Add(self.panel, 1, wx.EXPAND)
 #		self.SetSizer(sizer)
@@ -219,14 +240,14 @@ class OptionChainFrame(wx.Frame):
 		self.Destroy()
 		print "Option Chain closed!"
 
-class MainApp(wx.App):
+class OptionChainApp(wx.App):
 	def OnInit(self):
-		self.frame = OptionChainFrame(None, -1)
+		self.frame  = OptionChainFrame(None, -1)
+#		self.frame1 = 
 		self.frame.Show(True)
 		self.SetTopWindow(self.frame)
 		return True
 
 if __name__ == "__main__":
-	app = MainApp(0)
+	app = OptionChainApp(0)
 	app.MainLoop()
-	pass 

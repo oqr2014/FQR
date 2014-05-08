@@ -31,7 +31,7 @@ class McastServer:
 						break
 				if isTopPrice: ## only send top price level
 					sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
-#				time.sleep(.05)
+					time.sleep(.01)
 			inf.close()
 			
 class McastClient:

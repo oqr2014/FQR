@@ -61,7 +61,8 @@ class Option:
 	def print_out(self):
 		print "ex_style=", self.ex_style, "cp_type=", self.cp_type, "trade_date=", self.trade_date, \
 			"exp_date=", self.exp_date, "T=", self.T, "S=", self.S, "K=", self.K, \
-			"sigma=", self.sigma, "r=", self.r, "q=", self.q, "price_impl_vol=", self.price_impl_vol
+			"sigma=", self.sigma, "r=", self.r, "q=", self.q, \
+			"price_impl_vol=", self.price_impl_vol, "impl_vol=", self.impl_vol 
 
 	def calcPrice(self): 
 		self.option.calcPrice()
@@ -101,18 +102,18 @@ class Option:
 		return self.rho
 
 if __name__ == "__main__": 
-	option1 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", \
-		T_ = 1., S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
-	option1.calcPrice()	
-	option1.calcImplVol() 
-	option1.print_out()
-	print "price=", option1.price, "impl_vol=", option1.impl_vol 
+#	option1 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", \
+#		T_ = 1., S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
+#	option1.calcPrice()	
+#	option1.calcImplVol() 
+#	option1.print_out()
+#	print "price=", option1.price, "impl_vol=", option1.impl_vol 
 
 	option2 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", \
-		trade_date_ = 20140301, exp_date_ = 20150317, \
-		S_ = 36, K_ = 40, sigma_ = .2, r_ = .06, q_ = .06, price_impl_vol_ = 6) 
-	option2.calcPrice()	
-	option2.calcImplVol() 
+		trade_date_ = 20140301, exp_date_ = 20140321, \
+		S_ = 1870.875, K_ = 1865., sigma_ = .0, r_ = .01, q_ = .01, price_impl_vol_ = 1.4121) 
+	iv = option2.calcImplVol() 
+	print "#############IV=", iv
 	option2.print_out()
-	print "price=", option2.price, "impl_vol=", option2.impl_vol 
+	print "price_impl_vol=", option2.price_impl_vol, "impl_vol=", option2.impl_vol 
 

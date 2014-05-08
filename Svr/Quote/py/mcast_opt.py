@@ -34,7 +34,7 @@ class McastServer:
 				if selected: ## only top price level and exp date is 20140321
 #					print line 
 					sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
-#				time.sleep(.05)
+					time.sleep(.01)
 			inf.close()
 			
 if __name__ == "__main__":
