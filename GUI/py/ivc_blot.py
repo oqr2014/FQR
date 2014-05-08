@@ -38,7 +38,7 @@ class IVCFrame(wx.Frame):
 		self.create_main_panel()
 		self.timer       = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.on_recalc_ivc, self.timer)        
-		self.timer.Start(10000)  #Every 10 secs
+		self.timer.Start(2000)  #Every 10 secs
 
 	def create_menu(self):
 		self.menubar = wx.MenuBar()
@@ -103,8 +103,11 @@ class IVCFrame(wx.Frame):
 		pylab.setp(self.axes.get_xticklabels(), fontsize=10)
 		pylab.setp(self.axes.get_yticklabels(), fontsize=10)
 
-		tmp_data = [random.random() for i in range(100)]
-		self.plot_data = self.axes.plot(range(100), tmp_data, 'yo')[0]
+		tmp_put = [random.random() for i in range(100)]
+		tmp_call = [random.random() for i in range(100)]
+		self.plot_put = self.axes.plot(range(100), tmp_put, 'yo', label='PUT')[0]
+		self.plot_call = self.axes.plot(range(100), tmp_call, 'g+', label='CALL')[0]
+		self.plot_K_line = self.axes.plot(50*np.ones(100), np.arange(100)/100.)[0]
 
 	def draw_ivc(self):
 #		Ks = sorted(set(list(self.ivc_data.put_K_dict.keys()) + list(self.call_K_dict.keys())))
@@ -122,8 +125,12 @@ class IVCFrame(wx.Frame):
 		self.axes.set_ybound(lower=0., upper=1.)
 		self.axes.grid(True, color='gray')
 		pylab.setp(self.axes.get_xticklabels(), visible=True)
-		self.plot_data.set_xdata(put_Ks + call_Ks)
-		self.plot_data.set_ydata(put_ivc + call_ivc)
+		self.plot_put.set_xdata(put_Ks)
+		self.plot_put.set_ydata(put_ivc)
+		self.plot_call.set_xdata(call_Ks)
+		self.plot_call.set_ydata(call_ivc)
+		self.plot_K_line.set_xdata(np.ones(100)*self.ivc_data.S)
+		self.plot_K_line.set_ydata(np.arange(100)/100.)
 
 		self.canvas.draw()
 
