@@ -59,6 +59,7 @@ class McastSndrThrd(threading.Thread):
 #				print line 
 				time.sleep(.001)
 			in_f.close()
+			return 
 				
 			
 class McastSvr(object):

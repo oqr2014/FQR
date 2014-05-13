@@ -38,7 +38,7 @@ class IVCFrame(wx.Frame):
 		self.create_main_panel()
 		self.timer       = wx.Timer(self)
 		self.Bind(wx.EVT_TIMER, self.on_recalc_ivc, self.timer)        
-		self.timer.Start(2000)  #Every 10 secs
+		self.timer.Start(5000)  #Every 10 secs
 
 	def create_menu(self):
 		self.menubar = wx.MenuBar()
@@ -103,34 +103,35 @@ class IVCFrame(wx.Frame):
 		pylab.setp(self.axes.get_xticklabels(), fontsize=10)
 		pylab.setp(self.axes.get_yticklabels(), fontsize=10)
 
-		tmp_put = [random.random() for i in range(100)]
-		tmp_call = [random.random() for i in range(100)]
-		self.plot_put = self.axes.plot(range(100), tmp_put, 'yo', label='PUT')[0]
-		self.plot_call = self.axes.plot(range(100), tmp_call, 'g+', label='CALL')[0]
+		tmp_opt = [random.random() for i in range(100)]
+		tmp_fit = [random.random() for i in range(100)]
+		self.plot_opt = self.axes.plot(range(100), tmp_opt, 'yo', label='Options')[0]
+		self.plot_fit = self.axes.plot(range(100), tmp_fit, color='green', label='Poly Fit')[0]
 		self.plot_K_line = self.axes.plot(50*np.ones(100), np.arange(100)/100.)[0]
 
 	def draw_ivc(self):
-#		Ks = sorted(set(list(self.ivc_data.put_K_dict.keys()) + list(self.call_K_dict.keys())))
-		put_Ks = sorted(list(self.ivc_data.put_K_dict.keys()))
-		put_ivc = list(np.zeros(len(put_Ks)))
-		for i, k in enumerate(put_Ks):
-			put_ivc[i] = self.ivc_data.put_K_dict[k].impl_vol
+		Ks   = np.array(sorted(set(list(self.ivc_data.put_K_dict.keys())+list(self.ivc_data.call_K_dict.keys()))))
+		ivcs = np.array(np.zeros(len(Ks)))
+		for i, k in enumerate(Ks):
+			if k < self.ivc_data.S:
+				ivcs[i] = self.ivc_data.put_K_dict[k].impl_vol
+			elif k == self.ivc_data.S: 
+				ivcs[i] = (self.ivc_data.put_K_dict[i].impl_vol+self.ivc_data.call_K_dict[k].impl_vol)/2. 
+			else:
+				ivcs[i] = self.ivc_data.call_K_dict[k].impl_vol
 
-		call_Ks = sorted(list(self.ivc_data.call_K_dict.keys()))
-		call_ivc = list(np.zeros(len(call_Ks)))
-		for i, k in enumerate(call_Ks):
-			call_ivc[i] = self.ivc_data.call_K_dict[k].impl_vol
-
-		self.axes.set_xbound(lower = min(put_Ks[0], call_Ks[0]), upper = max(put_Ks[-1], call_Ks[-1]))
-		self.axes.set_ybound(lower=0., upper=1.)
+		coeffs = np.polyfit(Ks, ivcs, 6)  # polynomial fit by degree of 6 
+		poly6  = np.poly1d(coeffs)
+		self.axes.set_xbound(lower = min(Ks), upper = max(Ks))
+		self.axes.set_ybound(lower=0., upper=max(ivcs))
 		self.axes.grid(True, color='gray')
 		pylab.setp(self.axes.get_xticklabels(), visible=True)
-		self.plot_put.set_xdata(put_Ks)
-		self.plot_put.set_ydata(put_ivc)
-		self.plot_call.set_xdata(call_Ks)
-		self.plot_call.set_ydata(call_ivc)
+		self.plot_opt.set_xdata(Ks)
+		self.plot_opt.set_ydata(ivcs)
+		self.plot_fit.set_xdata(Ks)
+		self.plot_fit.set_ydata(poly6(Ks))
 		self.plot_K_line.set_xdata(np.ones(100)*self.ivc_data.S)
-		self.plot_K_line.set_ydata(np.arange(100)/100.)
+		self.plot_K_line.set_ydata(np.arange(100)/100.*max(ivcs))
 
 		self.canvas.draw()
 
