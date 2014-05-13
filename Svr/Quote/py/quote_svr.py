@@ -22,11 +22,11 @@ class Channel:
 		self.oids   = oids_
 		self.que    = Queue.Queue(max_size_)
 	
-class McastQuoteThread(threading.Thread, mcast.McastClient): 
-# Receiving quotes from outside quote server and adding the data into its Queue
+class McastQuoteThrd(threading.Thread, mcast.McastRcvr): 
+# Receiving quotes from multicast quotes and add the data into its Queue, respectively
 	def __init__(self, svr_, MCAST_ADDR_, MCAST_PORT_): 
 		threading.Thread.__init__(self)
-		mcast.McastClient.__init__(self, mcast_addr_=MCAST_ADDR_, mcast_port_=MCAST_PORT_)
+		mcast.McastRcvr.__init__(self, mcast_addr_=MCAST_ADDR_, mcast_port_=MCAST_PORT_)
 		self.svr = svr_
 		self.oid_ques_dict = {}
 			
@@ -119,7 +119,7 @@ class QuoteSvr(object):
 
 	def run(self):
 		self.running = True
-		mcastThread = McastQuoteThread(self, MCAST_ADDR_=self.MCAST_ADDR, MCAST_PORT_=self.MCAST_PORT) 
+		mcastThread = McastQuoteThrd(self, MCAST_ADDR_=self.MCAST_ADDR, MCAST_PORT_=self.MCAST_PORT) 
 		mcastThread.start()
 		self.threads.append(mcastThread)
 # client socket
