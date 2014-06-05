@@ -1,11 +1,13 @@
 #!/usr/bin/python
-###############################################################
+#################################################################################
 # Multithreaded TCP Socket Quote Server.
+# This quote server is used to feed data for GUIs 
 # Create a TCP socket each for each client connection. 
 # fix message quote for both futures and options
-###############################################################
+################################################################################
 
 from option_fix import *
+from xml_conf import * 
 import socket
 import sys
 import threading 
@@ -105,15 +107,17 @@ class TCPThread(threading.Thread):
 		self.stop.set()
 
 class QuoteSvr(object):
-	def __init__(self, HOST_='localhost', PORT_=22085, MCAST_ADDR_="224.168.2.9", MCAST_PORT_=1600):
-		self.HOST     = HOST_
-		self.PORT     = PORT_
-		self.ADDRESS  = (self.HOST, self.PORT)
-		self.MCAST_ADDR = MCAST_ADDR_
-		self.MCAST_PORT = MCAST_PORT_
-		self.cliSocks = [] 
-		self.threads  = []
-		self.sock_dict = {}  ## socket:Channel 
+	def __init__(self, quotes_ = ""):
+		fut_mcast_conf  = McastXmlConf(quotes_name_ = quotes)
+		fut_gui_conf    = GUIQuoteXmlConf(quotes_name_ = quotes)
+		self.HOST       = fut_gui_conf.host
+		self.PORT       = fut_gui_conf.port
+		self.ADDRESS    = (self.HOST, self.PORT)
+		self.MCAST_ADDR = fut_mcast_conf.mcast_addr
+		self.MCAST_PORT = fut_mcast_conf.mcast_port
+		self.cliSocks   = [] 
+		self.threads    = []
+		self.sock_dict  = {}  ## socket:Channel 
 		self.sock_dict_lock = threading.Lock()
 		self.sock_dict_dirty = False
 
@@ -205,7 +209,7 @@ class QuoteSvr(object):
 		
 if __name__ == "__main__":
 	try:
-		svr = QuoteSvr()
+		svr = QuoteSvr(quotes="FUTURES")
 		svr.run()
 	except KeyboardInterrupt:
 	# terminate with Ctrl-C

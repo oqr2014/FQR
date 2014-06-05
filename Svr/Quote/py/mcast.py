@@ -7,6 +7,8 @@ import socket
 import time
 import threading
 from option_fix import *
+from xml_conf import *
+
 
 class McastSndrThrd(threading.Thread):
 	def __init__(self, sndr_port_, mcast_addr_, mcast_port_, fix_file_):
@@ -70,10 +72,15 @@ class McastSvr(object):
 
 	def run(self):		
 		self.start_time = int(time.time())
-		fut_thrd = McastSndrThrd(sndr_port_=1501, mcast_addr_="224.168.2.9", mcast_port_=1600, fix_file_="/OMM/data/futures/ESFutures.log")
+		fut_conf = McastXmlConf(quotes_name_="FUTURES")
+		fut_thrd = McastSndrThrd(sndr_port_ = fut_conf.sender_port, mcast_addr_ = fut_conf.mcast_addr, \
+					mcast_port_ = fut_conf.mcast_port, fix_file_ = "/OMM/data/futures/ESFutures.log")
 		fut_thrd.start()
 		self.threads.append(fut_thrd) 
-		opt_thrd = McastSndrThrd(sndr_port_=1502, mcast_addr_="224.168.2.10", mcast_port_=1601, fix_file_="/OMM/data/options/ESOptions.log")
+		
+		opt_conf = McastXmlConf(quotes_name_="OPTIONS")
+		opt_thrd = McastSndrThrd(sndr_port_ = opt_conf.sender_port, mcast_addr_ = opt_conf.mcast_addr, \
+					mcast_port_ = opt_conf.mcast_port, fix_file_ = "/OMM/data/options/ESOptions.log")
 		opt_thrd.start()
 		self.threads.append(opt_thrd) 
 	
@@ -83,7 +90,7 @@ class McastSvr(object):
 				t1.join()
 
 class McastRcvr:
-	def __init__(self, any_="0.0.0.0", mcast_addr_="224.168.2.9", mcast_port_=1600): 
+	def __init__(self, any_ = "0.0.0.0", mcast_addr_ = "", mcast_port_ = 0): 
 		self.ANY        = any_
 		self.MCAST_ADDR = mcast_addr_
 		self.MCAST_PORT = mcast_port_

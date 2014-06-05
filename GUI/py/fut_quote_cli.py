@@ -10,11 +10,13 @@ import threading
 from futures_attr import * 
 from option_attr import *
 from option_fix import *
+from xml_conf import *
 
 class FutQuoteCli:
-	def __init__(self, HOST_='localhost', PORT_=22085, sfid_="0"):
-		self.HOST = HOST_
-		self.PORT = PORT_
+	def __init__(self, sfid_="0"):
+		gui_conf = GUIQuoteXmlConf(quotes_name_="FUTURES")
+		self.HOST = gui_conf.host
+		self.PORT = gui_conf.port
 		self.sfid = sfid_
 		# SOCK_STREAM == a TCP socket
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

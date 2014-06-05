@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Multicast UDP quotes config -->
+<QUOTES>
+	<FUTURES>
+		<sender_port>1501</sender_port>
+		<mcast_address>224.168.2.9</mcast_address>
+		<mcast_port>1600</mcast_port>
+	</FUTURES>
+	<OPTIONS>
+		<sender_port>1502</sender_port>
+		<mcast_address>224.168.2.10</mcast_address>
+		<mcast_port>1601</mcast_port>
+	</OPTIONS>
+</QUOTES>
+

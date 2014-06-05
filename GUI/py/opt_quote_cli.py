@@ -11,9 +11,10 @@ from option_attr import *
 from option_fix import *
 
 class OptQuoteCli:
-	def __init__(self, HOST_='localhost', PORT_=22086, sfid_="0"):
-		self.HOST = HOST_
-		self.PORT = PORT_
+	def __init__(self, sfid_="0"):
+		gui_conf = GUIQuoteXmlConf(quotes_name_="OPTIONS")
+		self.HOST = gui_conf.host
+		self.PORT = gui_conf.port
 		self.sfid = sfid_
 		# SOCK_STREAM == a TCP socket
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
