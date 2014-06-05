@@ -108,13 +108,13 @@ class TCPThread(threading.Thread):
 
 class QuoteSvr(object):
 	def __init__(self, quotes_ = ""):
-		fut_mcast_conf  = McastXmlConf(quotes_name_ = quotes)
-		fut_gui_conf    = GUIQuoteXmlConf(quotes_name_ = quotes)
-		self.HOST       = fut_gui_conf.host
-		self.PORT       = fut_gui_conf.port
+		mcast_conf      = McastXmlConf(quotes_name_ = quotes)
+		gui_conf        = GUIQuoteXmlConf(quotes_name_ = quotes)
+		self.HOST       = gui_conf.host
+		self.PORT       = gui_conf.port
 		self.ADDRESS    = (self.HOST, self.PORT)
-		self.MCAST_ADDR = fut_mcast_conf.mcast_addr
-		self.MCAST_PORT = fut_mcast_conf.mcast_port
+		self.MCAST_ADDR = mcast_conf.mcast_addr
+		self.MCAST_PORT = mcast_conf.mcast_port
 		self.cliSocks   = [] 
 		self.threads    = []
 		self.sock_dict  = {}  ## socket:Channel 
