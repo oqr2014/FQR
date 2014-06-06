@@ -2,6 +2,26 @@
 import os 
 from xml.dom import minidom 
 
+class GatewayExpDates:
+	fut_exp_dt  = 0
+	opt_exp_dt  = 0
+
+	def __init__(self, xml_file_="gateway_exp_dates.xml"):
+		xml_path = os.environ.get("XML_CONF_DIR")
+		xml_path += xml_file_
+		if not os.path.exists(xml_path):
+			msg = "####ERROR#### " + xml_path + " does not exists!"
+			raise Exception(msg)
+			
+		dom = minidom.parse(xml_path)
+		conf = dom.getElementsByTagName('FUTURES')[0]
+		self.fut_exp_dt = int(conf.getElementsByTagName('EXP_DATE')[0].childNodes[0].nodeValue) 
+		conf = dom.getElementsByTagName('OPTIONS')[0]
+		self.opt_exp_dt = int(conf.getElementsByTagName('EXP_DATE')[0].childNodes[0].nodeValue) 
+
+	def printout(self):
+		print "Gateway expiration dates: futures=%d options=%d" %(self.fut_exp_dt, self.opt_exp_dt) 
+
 class McastXmlConf:
 	quotes = ""
 	sender_port = 0 
@@ -56,6 +76,9 @@ class GUIQuoteXmlConf:
 		print 'host=%s port=%d' %(self.host, self.port) 
 
 if __name__ == "__main__": 
+	exp_dt_conf = GatewayExpDates()
+	exp_dt_conf.printout()
+
 	fut_conf = McastXmlConf(quotes_name_="FUTURES")
 	fut_conf.printout()
 	opt_conf = McastXmlConf(quotes_name_="OPTIONS")

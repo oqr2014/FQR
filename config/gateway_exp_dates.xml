@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Configure expiration dates for gateway for both futures and options -->
+<GATEWAY>
+	<FUTURES>
+		<EXP_DATE>20140321</EXP_DATE>
+	</FUTURES>
+	<OPTIONS>
+		<EXP_DATE>20140321</EXP_DATE>
+	</OPTIONS>
+</GATEWAY>
+
