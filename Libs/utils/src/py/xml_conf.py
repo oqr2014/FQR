@@ -3,8 +3,8 @@ import os
 from xml.dom import minidom 
 
 class GatewayExpDates:
-	fut_exp_dt  = 0
-	opt_exp_dt  = 0
+	fut_exp_dt = 0
+	opt_exp_dt = 0
 
 	def __init__(self, xml_file_="gateway_exp_dates.xml"):
 		xml_path = os.environ.get("XML_CONF_DIR")
