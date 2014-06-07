@@ -11,8 +11,10 @@ import random
 import sys
 import wx
 from ivc import *
-from option_attr import *
+from opt_attr import *
 from option import *
+from xml_conf import *
+
 # The recommended way to use wx with mpl is with the WXAgg
 # backend. 
 #
@@ -30,7 +32,8 @@ class IVCFrame(wx.Frame):
 		wx.Frame.__init__(self, parent_, id_, title_, pos_)
 		self.opt_data    = opt_data_
 		self.ivc_data    = ImplVolCurve()
-		self.opt_attr_ps = OptionAttrParser(filename_="/OMM/data/ES_20140321.xml")
+		self.gw_conf     = GatewayConf()
+		self.opt_attr_ps = OptAttrParser(filename_ = self.gw_conf.opt_sym)
 		self.Ks          = sorted(self.opt_attr_ps.K_set)
 		self.paused      = True
 		self.create_menu()

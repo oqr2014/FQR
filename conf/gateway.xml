@@ -3,9 +3,13 @@
 <GATEWAY>
 	<FUTURES>
 		<EXP_DATE>20140321</EXP_DATE>
+		<SYMBOL>/OMM/data/futures/FuturesSymbols.xml</SYMBOL>
+		<FIXMSG>/OMM/data/futures/ESFutures.log</FIXMSG>
 	</FUTURES>
 	<OPTIONS>
 		<EXP_DATE>20140321</EXP_DATE>
+		<SYMBOL>/OMM/data/options/ES_20140321.xml</SYMBOL>
+		<FIXMSG>/OMM/data/options/ESOptions.log</FIXMSG>
 	</OPTIONS>
 </GATEWAY>
 

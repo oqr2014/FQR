@@ -17,8 +17,8 @@
 # () order starts with tag 279
 # () Select 269=0/1, 279=1 and 1023=1, i.e. select top level bid/ask orders.
 #################################################################################################
-
 import os 
+from xml_conf import *
 
 def timeStr2Sec(str_): # time string format HH:MM:SS e.g. 14:53:01 
 	ll = str_.split(':')
@@ -164,8 +164,9 @@ class FixMsgParser:
 		ins.close()
 
 if __name__ == "__main__":
-#	fixParser = FixMsgParser(filename_='/OMM/data/fix_options.log')
-	fixParser = FixMsgParser(filename_='/OMM/data/futures/ESFutures.log')
-	print "total selected trades=", fixParser.selected_trades
+	gw_conf   = GatewayConf()
+#	fixParser = FixMsgParser(filename_='/OMM/data/options/fix_options.log')
+	fixPs = FixMsgParser(filename_ = gw_conf.fut_fixmsg)
+	print "total selected trades=", fixPs.selected_trades
 #	print fixParser.orders	
 

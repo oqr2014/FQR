@@ -132,7 +132,7 @@ class OptionChainPanel(wx.Panel):
 	def onFutConn(self, event_):
 		print "Connecting futures quote svr ..."
 		if self.fqt_trd == None:
-			self.fqt_trd = FutQuoteThread(self, self.fut_exp_date)
+			self.fqt_trd = FutQtThrd(self, self.fut_exp_date)
 			self.Connect(-1, -1, self.fqt_trd.wxeid, self.onFutData)
 	
 	def onFutStop(self, event_=None): 
@@ -168,7 +168,7 @@ class OptionChainPanel(wx.Panel):
 	def onOptConn(self, event_):
 		print "Connecting options quote svr ..."
 		if self.oqt_trd == None:
-			self.oqt_trd = OptQuoteThread(self, self.opt_exp_date)
+			self.oqt_trd = OptQtThrd(self, self.opt_exp_date)
 			self.Connect(-1, -1, self.oqt_trd.wxeid, self.onOptData)
 			self.oid_dict = self.oqt_trd.opt_attr_ps.oid_dict
 			Ks = sorted(self.oqt_trd.opt_attr_ps.K_set)

@@ -1,24 +1,23 @@
 #!/bin/bash
 #################################################################
-# Test program for multicasting fix msgs of futures
+# Test program for multicasting fix msgs of futures and options
 #################################################################
 import os 
 import socket
 import time
 import threading
-from option_fix import *
+from fix import *
 from xml_conf import *
 
-
 class McastSndrThrd(threading.Thread):
-	def __init__(self, sndr_port_, mcast_addr_, mcast_port_, fix_file_):
+	def __init__(self, sndr_port_, mcast_addr_, mcast_port_, fix_file_, start_time_):
 		threading.Thread.__init__(self)
 		self.ANY         = "0.0.0.0"
 		self.SNDR_PORT   = sndr_port_ 
 		self.MCAST_ADDR  = mcast_addr_
 		self.MCAST_PORT  = mcast_port_
 		self.fix_file    = fix_file_
-#		self.cv          = cv_
+		self.start_time  = start_time_
 		
 	def run(self): 
 		sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -29,58 +28,47 @@ class McastSndrThrd(threading.Thread):
 		sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
 		if not os.path.isfile(self.fix_file):
 			raise Exception("fix file: %s does not exist" %self.fix_file)
+		
+		bFirst = True
 		while 1:
-			pre_ts  = 0
-			cur_ts  = 0 
+			et0 = 0
 			in_f = open(self.fix_file, "r")
-			real_pre_ts = time.time()
-			order_num_cur_ts = 0
 			for line in in_f:
-				fixPs = FixMsgParser(str_=line)
+				fixPs = FixMsgParser(str_ = line)
 				if len(fixPs.orders) == 0:
 					continue
-				cur_ts = fixPs.orders[0].entry_time
-				if pre_ts == 0:
-					pre_ts = cur_ts
-					order_num_cur_ts = 1
-					sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
-					real_pre_ts = time.time()
+				if bFirst:
+					et0 = fixPs.orders[0].entry_time
+					bFirst = False 
+					sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT))
 					continue
-				if pre_ts < cur_ts: 
-					order_num_cur_ts = 0 
-					wait_time = cur_ts - pre_ts - (time.time() - real_pre_ts)
-#					print "wait_time", wait_time 
-					if wait_time > 0:
-						time.sleep(wait_time)
-				else:
-					order_num_cur_ts += 1 
-					if order_num_cur_ts == 1: 
-						real_pre_ts = time.time()
-				pre_ts = cur_ts
-				sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT));
-#				print line 
+				et = fixPs.orders[0].entry_time
+				while 1:
+					cts = int(time.time()) + 1
+					if cts >= (self.start_time + et - et0):
+						break
+					time.sleep(.5)
+				sock.sendto(line, (self.MCAST_ADDR, self.MCAST_PORT))
 				time.sleep(.001)
 			in_f.close()
 			return 
-				
 			
 class McastSvr(object):
 	def __init__(self):
 		self.threads = [] 
-		self.cv = threading.Condition()
-		self.cv_counter = 0
 
 	def run(self):		
-		self.start_time = int(time.time())
+		gw_conf  = GatewayConf()
 		fut_conf = McastXmlConf(quotes_name_="FUTURES")
+		self.start_time = int(time.time()) + 1
 		fut_thrd = McastSndrThrd(sndr_port_ = fut_conf.sender_port, mcast_addr_ = fut_conf.mcast_addr, \
-					mcast_port_ = fut_conf.mcast_port, fix_file_ = "/OMM/data/futures/ESFutures.log")
+					mcast_port_ = fut_conf.mcast_port, fix_file_ = gw_conf.fut_fixmsg, start_time_ = self.start_time)
 		fut_thrd.start()
 		self.threads.append(fut_thrd) 
 		
 		opt_conf = McastXmlConf(quotes_name_="OPTIONS")
 		opt_thrd = McastSndrThrd(sndr_port_ = opt_conf.sender_port, mcast_addr_ = opt_conf.mcast_addr, \
-					mcast_port_ = opt_conf.mcast_port, fix_file_ = "/OMM/data/options/ESOptions.log")
+					mcast_port_ = opt_conf.mcast_port, fix_file_ = gw_conf.opt_fixmsg, start_time_ = self.start_time)
 		opt_thrd.start()
 		self.threads.append(opt_thrd) 
 	

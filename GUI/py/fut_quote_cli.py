@@ -7,14 +7,14 @@ import socket
 import random
 import wx
 import threading
-from futures_attr import * 
-from option_attr import *
-from option_fix import *
+from fut_attr import * 
+from opt_attr import *
+from fix import *
 from xml_conf import *
 
-class FutQuoteCli:
-	def __init__(self, sfid_="0"):
-		gui_conf = GUIQuoteXmlConf(quotes_name_="FUTURES")
+class FutQtCli:
+	def __init__(self, sfid_ = "0"):
+		gui_conf = GUIQtXmlConf(quotes_name_ = "FUTURES")
 		self.HOST = gui_conf.host
 		self.PORT = gui_conf.port
 		self.sfid = sfid_
@@ -38,23 +38,24 @@ class FutQuoteCli:
 			print "[%s]" % (recv_data)
 		self.sock.close()
 
-class FutDataEvent(wx.PyEvent):
+class FutDataEvt(wx.PyEvent):
 	def __init__(self, wxeid_, data_):
 		wx.PyEvent.__init__(self)
 		self.SetEventType(wxeid_)
 		self.data = data_
 
-class FutQuoteThread(threading.Thread):
-	def __init__(self, notify_win_, exp_date_=20140321):
+class FutQtThrd(threading.Thread):
+	def __init__(self, notify_win_, exp_date_ = 0):
 		threading.Thread.__init__(self)
 		self.wxeid       = wx.NewId()
 		self.notify_win  = notify_win_
 		self.stop        = threading.Event()
-		self.fut_attr_ps = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
+		gw_conf          = GatewayConf()
+		self.fut_attr_ps = FutAttrParser(filename_ = gw_conf.fut_sym)
 		self.exp_date    = exp_date_ 
 		self.exp_date_changed = threading.Event()
-		self.fid        = self.fut_attr_ps.exp_date_dict[self.exp_date].fid
-		self.fquote     = FutQuoteCli()
+		self.fid         = self.fut_attr_ps.exp_date_dict[self.exp_date].fid
+		self.fquote      = FutQtCli()
 #		self.setDaemon(True)
 		self.start()
 	
@@ -72,7 +73,7 @@ class FutQuoteThread(threading.Thread):
 				(orders, tail) = FixMsg.str2order(recv_data) 
 				if len(orders) > 0:
 #					print len(orders), "futures orders posted" 
-					wx.PostEvent(self.notify_win, FutDataEvent(self.wxeid, orders))
+					wx.PostEvent(self.notify_win, FutDataEvt(self.wxeid, orders))
 
 #		self.fquote.sock.shutdown(socket.SHUT_RDWR)
 		self.fquote.sock.close() 
@@ -89,9 +90,9 @@ class FutQuoteThread(threading.Thread):
 			self.shutdown()
 
 if __name__ == "__main__":
-	futAttr  = FuturesAttrParser(filename_="/OMM/data/futures/FuturesSymbols.xml")
-	exp_date = 20140321
-	fid      = futAttr.exp_date_dict[exp_date].fid 
-	client   = FutQuoteCli(sfid_=str(fid))
+	gw_conf   = GatewayConf()
+	futAttrPs = FutAttrParser(filename_ = gw_conf.fut_sym)
+	fid       = futAttrPs.exp_date_dict[gw_conf.fut_exp_dt].fid 
+	client    = FutQtCli(sfid_ = str(fid))
 	client.run()
 

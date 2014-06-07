@@ -6,7 +6,7 @@
 # fix message quote for both futures and options
 ################################################################################
 
-from option_fix import *
+from fix import *
 from xml_conf import * 
 import socket
 import sys
@@ -43,8 +43,8 @@ class McastQuoteThrd(threading.Thread, mcast.McastRcvr):
 				data, addr = self.sock.recvfrom(8192)
 #				print "FROM: ", addr
 #				print "DATA: ", data
-				fixParser = FixMsgParser(str_=data)
-				for order in fixParser.orders: 
+				fixPs = FixMsgParser(str_=data)
+				for order in fixPs.orders: 
 					if order.sid in self.oid_ques_dict.keys():
 						if order.price_level != 1: 
 							continue
@@ -107,9 +107,9 @@ class TCPThread(threading.Thread):
 		self.stop.set()
 
 class QuoteSvr(object):
-	def __init__(self, quotes_ = ""):
-		mcast_conf      = McastXmlConf(quotes_name_ = quotes)
-		gui_conf        = GUIQuoteXmlConf(quotes_name_ = quotes)
+	def __init__(self, quotes_):
+		mcast_conf      = McastXmlConf(quotes_name_ = quotes_)
+		gui_conf        = GUIQtXmlConf(quotes_name_ = quotes_)
 		self.HOST       = gui_conf.host
 		self.PORT       = gui_conf.port
 		self.ADDRESS    = (self.HOST, self.PORT)
@@ -209,7 +209,7 @@ class QuoteSvr(object):
 		
 if __name__ == "__main__":
 	try:
-		svr = QuoteSvr(quotes="FUTURES")
+		svr = QuoteSvr(quotes_ = "FUTURES")
 		svr.run()
 	except KeyboardInterrupt:
 	# terminate with Ctrl-C
