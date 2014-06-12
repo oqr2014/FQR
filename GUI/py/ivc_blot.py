@@ -58,11 +58,11 @@ class IVCFrame(wx.Frame):
 	def create_ctrls(self): 
 		self.pause_button     = wx.Button(self.panel, -1, "Resume")
 		self.valdate_lb       = wx.StaticText(self.panel, label="Value date")
-		self.valdate_txt_ctrl = wx.TextCtrl(self.panel, value="20140305")
+		self.valdate_txt_ctrl = wx.TextCtrl(self.panel, value=str(self.gw_conf.val_dt))
 		self.r_lb             = wx.StaticText(self.panel, label="Risk free rate")
-		self.r_txt_ctrl       = wx.TextCtrl(self.panel, value="0.01")
+		self.r_txt_ctrl       = wx.TextCtrl(self.panel, value=str(self.gw_conf.rf_rate))
 		self.q_lb             = wx.StaticText(self.panel, label="Dividend rate")
-		self.q_txt_ctrl       = wx.TextCtrl(self.panel, value="0.01")
+		self.q_txt_ctrl       = wx.TextCtrl(self.panel, value=str(self.gw_conf.div_rate))
 
 	def create_main_panel(self):
 		self.panel   = wx.Panel(self)
