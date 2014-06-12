@@ -42,6 +42,10 @@ class Option:
 			raise Exception("Option::__init__ failed")
 		self.T = self.option.T
 			
+	def setSigma(self, sigma_):
+		self.sigma = sigma_
+		self.option.sigma = sigma_
+
 	def create_euro_option(self):
 		if self.trade_date != 0 and self.exp_date != 0: 
 			self.option = EuroOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \

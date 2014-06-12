@@ -1,2 +1,2 @@
-#Style  Type  valueDate maturityDate       S      K          sigma   r    q          price
-AMERICAN PUT  03/1/2014 03/21/2014  1873.125 1540.0 0.314810447693 .01 0.01 0.152777777778
+#Style  Type  valueDate maturityDate        S     K         sigma      r      q  price
+AMERICAN PUT  03/05/2014 03/21/2014  1870.375 1865. .120987157822 .00155 .00155  16.25

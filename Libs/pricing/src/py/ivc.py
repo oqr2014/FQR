@@ -91,8 +91,8 @@ class FitIvc(object):
 		try: 
 			iv_.impl_vol = opt.calcImplVol()
 			opt.price    = iv_.price
-			opt.sigma    = iv_.impl_vol
-#			iv_.delta    = opt.calcDelta()
+			opt.setSigma(iv_.impl_vol) 
+			iv_.delta    = opt.calcDelta()
 		except RuntimeError, e:
 			print "RuntimeError caught: ", e.message
 		except:
@@ -136,20 +136,20 @@ class FitIvc(object):
 			if k < self.ivc_data.minK or k > self.ivc_data.maxK:
 				continue
 			if k < self.ivc_data.S:
-#				if abs(self.ivc_data.put_K_dict[k].delta) > .05: 
+				if abs(self.ivc_data.put_K_dict[k].delta) > .05: 
 					self.Ks.append(k)
 					self.ivs.append(self.ivc_data.put_K_dict[k].impl_vol)
-#				else:
-#					print "## Skipped small delta PUT: K=%f delta=%f" %(k, self.ivc_data.put_K_dict[k].delta) 
+				else:
+					print "## Skipped small delta PUT: K=%f delta=%f" %(k, self.ivc_data.put_K_dict[k].delta) 
 			elif k == self.ivc_data.S:
 				self.Ks.append(k)
 				self.ivs.append( (self.ivc_data.put_K_dict[i].impl_vol + self.ivc_data.call_K_dict[k].impl_vol)/2. )
 			else: 
-#				if self.ivc_data.call_K_dict[k].delta > .05: 
+				if self.ivc_data.call_K_dict[k].delta > .05: 
 					self.Ks.append(k)
 					self.ivs.append(self.ivc_data.call_K_dict[k].impl_vol)
-#				else:
-#					print "## Skipped small delta CALL: K=%f delta=%f" %(k, self.ivc_data.call_K_dict[k].delta) 
+				else:
+					print "## Skipped small delta CALL: K=%f delta=%f" %(k, self.ivc_data.call_K_dict[k].delta) 
 
 		coeffs = np.polyfit(self.Ks, self.ivs, degree_)
 		poly_n = np.poly1d(coeffs)
