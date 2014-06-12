@@ -147,16 +147,20 @@ class OptionChainPanel(wx.Panel):
 		self.opt_data.fut_exp_date = self.fut_exp_date
 		for order in event_.data:
 			if order.entry_type == 0: ## bid
+				self.opt_data.fut_bid = order.price
+			else: ## ask
+				self.opt_data.fut_ask = order.price
+		self.opt_data.fut_lock.release()
+		
+		for order in event_.data:
+			if order.entry_type == 0: ## bid
 				self.fut_grid.SetCellValue(order.price_level-1, 2, "%.2f" % order.price)
 				self.fut_grid.SetCellValue(order.price_level-1, 1, "%d" % order.quantity)
 				self.fut_grid.SetCellValue(order.price_level-1, 0, "%s" % sec2TimeStr(order.entry_time))
-				self.opt_data.fut_bid = order.price
 			else: ## ask
 				self.fut_grid.SetCellValue(order.price_level-1, 3, "%.2f" % order.price)
 				self.fut_grid.SetCellValue(order.price_level-1, 4, "%d" % order.quantity)
 				self.fut_grid.SetCellValue(order.price_level-1, 5, "%s" % sec2TimeStr(order.entry_time))
-				self.opt_data.fut_ask = order.price
-		self.opt_data.fut_lock.release()
 	
 	def onOptExpDateSel(self, event_):
 		print "option expiration date selected:", event_.GetString()	
@@ -192,6 +196,28 @@ class OptionChainPanel(wx.Panel):
 				print "##### onOptData Error, order not found: "
 				order.printout()
 				continue 
+			if order.price_level != 1:
+				continue
+			opt_attr = self.oid_dict[order.sid]
+			if opt_attr.cp_type == "P":  ##PUT 
+				if order.entry_type == 0: ## bid 
+					self.opt_data.put_K_bid_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="PUT")
+				else:  ## ask 
+					self.opt_data.put_K_ask_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="PUT")
+			else:  ## CALL
+				if order.entry_type == 0: ## bid 
+					self.opt_data.call_K_bid_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="CALL")
+				else:  ## ask 
+					self.opt_data.call_K_ask_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="CALL")
+		self.opt_data.opt_lock.release()
+
+		for order in event_.data:
+#			print "order received" 
+#			order.printout()
+			if not order.sid in self.oid_dict.keys(): 
+				continue 
+			if order.price_level != 1:
+				continue
 			opt_attr = self.oid_dict[order.sid]
 			row = self.K_dict[opt_attr.strike]
 			self.opt_grid.SetCellValue(row, 6, "%.2f" % opt_attr.strike)
@@ -200,25 +226,19 @@ class OptionChainPanel(wx.Panel):
 					self.opt_grid.SetCellValue(row, 2, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 1, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 0, "%s" % sec2TimeStr(order.entry_time))
-					self.opt_data.put_K_bid_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="PUT")
 				else:  ## ask 
 					self.opt_grid.SetCellValue(row, 3, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 4, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 5, "%s" % sec2TimeStr(order.entry_time))
-					self.opt_data.put_K_ask_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="PUT")
 			else:  ## CALL
 				if order.entry_type == 0: ## bid 
 					self.opt_grid.SetCellValue(row, 9, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 8, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 7, "%s" % sec2TimeStr(order.entry_time))
-					self.opt_data.call_K_bid_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="CALL")
 				else:  ## ask 
 					self.opt_grid.SetCellValue(row, 10, "%.2f" % order.price)
 					self.opt_grid.SetCellValue(row, 11, "%d" % order.quantity)
 					self.opt_grid.SetCellValue(row, 12, "%s" % sec2TimeStr(order.entry_time))
-					self.opt_data.call_K_ask_dict[opt_attr.strike] = ImplVol(price_=order.price, ts_=order.entry_time, cp_type_="CALL")
-		self.opt_data.opt_lock.release()
-
 
 	def onClose(self, event_=None):
 		self.onFutStop()

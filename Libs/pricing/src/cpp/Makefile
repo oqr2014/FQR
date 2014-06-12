@@ -1,10 +1,10 @@
 # Makefile 
 #
 
-CC        = g++
-DBG_SODIR     = ./debug
-DBG_SONAME    = liboqr_d.so  
-DBG_OBJS      = \
+CC         = g++
+DBG_SODIR  = ./debug
+DBG_SONAME = liboqr_d.so  
+DBG_OBJS   = \
 	$(DBG_SODIR)/option.o \
 	$(DBG_SODIR)/euro_option.o \
 	$(DBG_SODIR)/am_option.o \
@@ -13,20 +13,14 @@ DBG_OBJS      = \
 	$(DBG_SODIR)/test_kit.o \
 	
 
-REL_SODIR     = ./release
-REL_SONAME    = liboqr.so  
-REL_OBJS      = \
-	$(REL_SODIR)/option.o \
-	$(REL_SODIR)/euro_option.o \
-	$(REL_SODIR)/am_option.o \
-	$(REL_SODIR)/greeks.o  \
-	$(REL_SODIR)/utility.o \
-	$(REL_SODIR)/test_kit.o \
+REL_SODIR  = ./release
+REL_SONAME = liboqr.so  
+REL_OBJS   = $(subst $(DBG_SODIR), $(REL_SODIR), $(DBG_OBJS))
 
-INC       = -I/usr/include
-DBG_CPPFLAGS  = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
-REL_CPPFLAGS  = -O3 -pthread -fPIC $(INC)
-CFLAGS    = -fPIC -fpermissive -shared
+INC        = -I/usr/include
+DBG_CPPFLAGS = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
+REL_CPPFLAGS = -O3 -pthread -fPIC $(INC)
+CFLAGS     = -fPIC -fpermissive -shared
 
 all: $(DBG_SODIR)/$(DBG_SONAME) $(REL_SODIR)/$(REL_SONAME)
 

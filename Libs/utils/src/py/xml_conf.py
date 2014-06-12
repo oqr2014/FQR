@@ -9,6 +9,9 @@ class GatewayConf:
 	opt_exp_dt = 0
 	opt_sym    = ""
 	opt_fixmsg = ""
+	val_dt     = 0
+	rf_rate    = 0.
+	div_rate   = 0.
 
 	def __init__(self, xml_file_="gateway.xml"):
 		xml_path = os.environ.get("XML_CONF_DIR")
@@ -27,11 +30,15 @@ class GatewayConf:
 		self.opt_exp_dt = int(conf.getElementsByTagName('EXP_DATE')[0].childNodes[0].nodeValue) 
 		self.opt_sym    = conf.getElementsByTagName('SYMBOL')[0].childNodes[0].nodeValue 
 		self.opt_fixmsg = conf.getElementsByTagName('FIXMSG')[0].childNodes[0].nodeValue 
+		self.val_dt     = int(conf.getElementsByTagName('VALUE_DATE')[0].childNodes[0].nodeValue) 
+		self.rf_rate    = float(conf.getElementsByTagName('RISK_FREE_RATE')[0].childNodes[0].nodeValue)
+		self.div_rate   = float(conf.getElementsByTagName('DIVIDEND_RATE')[0].childNodes[0].nodeValue)
 
 	def printout(self):
 		print "Gateway conf: " 
 		print "futures: exp_date=%d symbol=%s fixmsg=%s" %(self.fut_exp_dt, self.fut_sym, self.fut_fixmsg) 
 		print "options: exp_date=%d symbol=%s fixmsg=%s" %(self.opt_exp_dt, self.opt_sym, self.opt_fixmsg) 
+		print "value date=%d risk free rate=%f dividend rate=%f" %(self.val_dt, self.rf_rate, self.div_rate) 
 
 class McastXmlConf:
 	quotes = ""

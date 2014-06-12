@@ -76,10 +76,12 @@ void AmOption::init()
 double AmOption::criticalPrice(double tolerance_)
 {
 	double riskFreeDF = std::exp(-_r * _T); 
+	double dividendDF = std::exp(-_q * _T); 
 	double variance = _sigma * _sigma; 
-	double n = 2.0 * _r * _T / variance;
+	double n = 2.0 * std::log(dividendDF / riskFreeDF) / variance;
 	double m = 2.0 * _r * _T / variance;
-	double bT = _r * _T;
+	double bT = std::log(dividendDF / riskFreeDF);
+	
 	double  qu, Su, h, Si;
 	switch (_type) {
 	case Option::CALL:
@@ -100,7 +102,7 @@ double AmOption::criticalPrice(double tolerance_)
 
 // Newton Raphson algorithm for finding critical price Si
 	double Q, LHS, RHS, bi;
-	double forwardSi = Si / riskFreeDF;
+	double forwardSi = Si * dividendDF / riskFreeDF;
 	double d1 = (std::log(forwardSi/_K) + 0.5*variance) / _sigma;
 	QuantLib::CumulativeNormalDistribution cumNormalDist;
 	double K = (riskFreeDF != 1.0) ?  2.0*_r*_T / (variance * (1.0 - riskFreeDF)) : 0.0;
@@ -110,31 +112,35 @@ double AmOption::criticalPrice(double tolerance_)
 	case Option::CALL:
 		Q = (-(n-1.0) + std::sqrt(((n-1.0)*(n-1.0)) + 4 * K)) / 2;
 		LHS = Si - _K;
-		RHS = temp + (1 - cumNormalDist(d1)) * Si / Q;
-		bi =  cumNormalDist(d1) * (1 - 1/Q) + (1 - cumNormalDist.derivative(d1) / _sigma) / Q;
+		RHS = temp + (1 - dividendDF * cumNormalDist(d1)) * Si / Q;
+		bi =  dividendDF * cumNormalDist(d1) * (1 - 1/Q) 
+			+ (1 - dividendDF * cumNormalDist.derivative(d1) / _sigma) / Q;
 		while (std::fabs(LHS - RHS)/_K > tolerance_) {
 			Si = (_K + RHS - bi * Si) / (1 - bi);
-			forwardSi = Si / riskFreeDF;
+			forwardSi = Si * dividendDF / riskFreeDF;
 			d1 = (std::log(forwardSi / _K) + 0.5 * variance) / _sigma;
 			LHS = Si - _K;
 			double temp2 = blackFormula(option_type, _K, forwardSi, _sigma) * riskFreeDF;
-			RHS = temp2 + (1 - cumNormalDist(d1)) * Si / Q;
-			bi = cumNormalDist(d1) * (1 - 1 / Q) + (1 - cumNormalDist.derivative(d1) / _sigma) / Q;
+			RHS = temp2 + (1 - dividendDF * cumNormalDist(d1)) * Si / Q;
+			bi = dividendDF * cumNormalDist(d1) * (1 - 1 / Q) 
+				+ (1 - dividendDF * cumNormalDist.derivative(d1) / _sigma) / Q;
 		}
 		break;
 	case Option::PUT:
 		Q = (-(n-1.0) - std::sqrt(((n-1.0)*(n-1.0)) + 4 * K)) / 2;
 		LHS = _K - Si;
-		RHS = temp - (1 - cumNormalDist(-d1)) * Si / Q;
-		bi = - cumNormalDist(-d1) * (1 - 1/Q) - (1 + cumNormalDist.derivative(-d1) / _sigma) / Q;
+		RHS = temp - (1 - dividendDF * cumNormalDist(-d1)) * Si / Q;
+		bi = - dividendDF * cumNormalDist(-d1) * (1 - 1/Q) 
+			- (1 + dividendDF * cumNormalDist.derivative(-d1) / _sigma) / Q;
 		while (std::fabs(LHS - RHS)/_K > tolerance_) {
 			Si = (_K - RHS + bi * Si) / (1 + bi);
-			forwardSi = Si / riskFreeDF;
+			forwardSi = Si * dividendDF / riskFreeDF;
 			d1 = (std::log(forwardSi/_K) + 0.5*variance) / _sigma;
 			LHS = _K - Si;
 			double temp2 = blackFormula(option_type, _K, forwardSi, _sigma) * riskFreeDF;
-			RHS = temp2 - (1 - cumNormalDist(-d1)) * Si / Q;
-			bi = - cumNormalDist(-d1) * (1 - 1 / Q) - (1 + cumNormalDist.derivative(-d1) / _sigma) / Q;
+			RHS = temp2 - (1 - dividendDF * cumNormalDist(-d1)) * Si / Q;
+			bi = - dividendDF * cumNormalDist(-d1) * (1 - 1 / Q) 
+				- (1 + dividendDF * cumNormalDist.derivative(-d1) / _sigma) / Q;
 		}
 		break;
 	default:
@@ -147,27 +153,28 @@ void AmOption::calcPrice()
 { 
 	if ( !_initFlag ) 
 		init(); 
-	if( Option::CALL == _type ) { 
-// assume no dividend, european option call = american option   
-		_euroOption.calcPrice(); 
-		_price = _euroOption.getPrice(); 
-		return; 
-	} 
 	// early exercise may be optimal for PUT 
 	QuantLib::CumulativeNormalDistribution cumNormalDist;
 	double tolerance = 1e-5;
 	double Sk = criticalPrice(tolerance);
 	double riskFreeDF = std::exp(-_r * _T); 
-	double forwardSk = Sk / riskFreeDF;
+	double dividendDF = std::exp(-_q * _T); 
+	double forwardSk = Sk * dividendDF / riskFreeDF;
+	if( dividendDF >= 1. && Option::CALL == _type ) { 
+		//european option call = american option   
+		_euroOption.calcPrice(); 
+		_price = _euroOption.getPrice(); 
+		return; 
+	} 
 	double variance = _sigma * _sigma; 
 	double d1 = (std::log(forwardSk / _K) + 0.5 * variance) / _sigma;
-	double n = 2.0 * _r * _T / variance;
+	double n = 2.0 * std::log(dividendDF / riskFreeDF) / variance;
 	double K = 2.0 * _r *_T / (variance * (1.0 - riskFreeDF));
 	double Q, a;
 	switch (_type) {
 	case Option::CALL:
 		Q = (-(n-1.0) + std::sqrt(((n-1.0)*(n-1.0))+4.0*K))/2.0;
-		a =  (Sk/Q) * (1.0 - cumNormalDist(d1));
+		a =  (Sk/Q) * (1.0 - dividendDF * cumNormalDist(d1));
 		if (_S < Sk) {
 			_euroOption.calcPrice(); 
 			_price = _euroOption.getPrice() + a * std::pow((_S/Sk), Q);
@@ -177,7 +184,7 @@ void AmOption::calcPrice()
 		break;
 	case Option::PUT:
 		Q = (-(n-1.0) - std::sqrt(((n-1.0)*(n-1.0))+4.0*K))/2.0;
-		a = -(Sk/Q) * (1.0 - cumNormalDist(-d1));
+		a = -(Sk/Q) * (1.0 - dividendDF * cumNormalDist(-d1));
 		if (_S > Sk) {
 			_euroOption.calcPrice(); 
 			_price = _euroOption.getPrice() + a * std::pow((_S/Sk), Q);

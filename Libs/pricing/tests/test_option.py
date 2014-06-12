@@ -34,12 +34,14 @@ class TestOption:
 			opt.calcTheta()
 			opt.calcRho()
 			opt.calcImplVol()
+			print "style\ttype\tprice\tdelta\tvega\tgamma\ttheta\trho\timpl_vol" 
 			print opt.ex_style, opt.cp_type, opt.price, opt.delta, \
 				opt.vega, opt.gamma, opt.theta, opt.rho, opt.impl_vol
 
 	def write_option_file(self): 
 		outs = open(self.outFile, "w")
 		for opt in self.options: 
+			print >> outs, "style\ttype\tprice\tdelta\tvega\tgamma\ttheta\trho\timpl_vol" 
 			print >> outs, opt.ex_style, opt.cp_type, opt.price, \
 				opt.delta, opt.vega, opt.gamma, opt.theta, opt.rho, opt.impl_vol
 		outs.close()

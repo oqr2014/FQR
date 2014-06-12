@@ -111,7 +111,7 @@ protected:
     double  _T;        // year fraction of time to maturity 
     double  _sigma;    // Volatility 
     double  _r;        // Risk free rate 
-    double  _q;        // Dividend yield, not used so far 
+    double  _q;        // Dividend yield, for futures options _q = _r
     QuantLib::DayCounter _dayCounter; 
     int     _initFlag;
 	double  _price;

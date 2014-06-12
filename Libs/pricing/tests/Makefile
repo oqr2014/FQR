@@ -1,22 +1,21 @@
 # Makefile
 
-CC        = g++
-DBG_SODIR     = ./debug
-DBG_SONAME    = test_option_d 
-DBG_OBJS      = \
+CC         = g++
+DBG_SODIR  = ./debug
+DBG_SONAME = test_option_d 
+DBG_OBJS   = \
 	$(DBG_SODIR)/test_option.o \
 
-REL_SODIR     = ./release
-REL_SONAME    = test_option
-REL_OBJS      = \
-	$(REL_SODIR)/test_option.o \
+REL_SODIR  = ./release
+REL_SONAME = test_option
+REL_OBJS   = $(subst $(DBG_SODIR), $(REL_SODIR), $(DBG_OBJS))
 
-INC       = -I/usr/local/include -I/usr/include
-DBG_CPPFLAGS  = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
-REL_CPPFLAGS  = -O3 -pthread -fPIC $(INC)
-DBG_LIBS  = -lQuantLib -loqr_d
-REL_LIBS  = -lQuantLib -loqr
-CFLAGS    = -fPIC -fpermissive 
+INC        = -I/usr/local/include -I/usr/include
+DBG_CPPFLAGS = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
+REL_CPPFLAGS = -O3 -pthread -fPIC $(INC)
+DBG_LIBS   = -lQuantLib -loqr_d
+REL_LIBS   = -lQuantLib -loqr
+CFLAGS     = -fPIC -fpermissive 
 
 all: $(DBG_SODIR)/$(DBG_SONAME) $(REL_SODIR)/$(REL_SONAME)
 

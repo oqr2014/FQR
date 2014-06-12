@@ -32,6 +32,7 @@ class IVCFrame(wx.Frame):
 		wx.Frame.__init__(self, parent_, id_, title_, pos_)
 		self.opt_data    = opt_data_
 		self.ivc_data    = ImplVolCurve()
+		self.fitIvc      = FitIvc(self.opt_data, self.ivc_data)
 		self.gw_conf     = GatewayConf()
 		self.opt_attr_ps = OptAttrParser(filename_ = self.gw_conf.opt_sym)
 		self.Ks          = sorted(self.opt_attr_ps.K_set)
@@ -57,7 +58,7 @@ class IVCFrame(wx.Frame):
 	def create_ctrls(self): 
 		self.pause_button     = wx.Button(self.panel, -1, "Resume")
 		self.valdate_lb       = wx.StaticText(self.panel, label="Value date")
-		self.valdate_txt_ctrl = wx.TextCtrl(self.panel, value="20140301")
+		self.valdate_txt_ctrl = wx.TextCtrl(self.panel, value="20140305")
 		self.r_lb             = wx.StaticText(self.panel, label="Risk free rate")
 		self.r_txt_ctrl       = wx.TextCtrl(self.panel, value="0.01")
 		self.q_lb             = wx.StaticText(self.panel, label="Dividend rate")
@@ -113,28 +114,17 @@ class IVCFrame(wx.Frame):
 		self.plot_K_line = self.axes.plot(50*np.ones(100), np.arange(100)/100.)[0]
 
 	def draw_ivc(self):
-		Ks   = np.array(sorted(set(list(self.ivc_data.put_K_dict.keys())+list(self.ivc_data.call_K_dict.keys()))))
-		ivcs = np.array(np.zeros(len(Ks)))
-		for i, k in enumerate(Ks):
-			if k < self.ivc_data.S:
-				ivcs[i] = self.ivc_data.put_K_dict[k].impl_vol
-			elif k == self.ivc_data.S: 
-				ivcs[i] = (self.ivc_data.put_K_dict[i].impl_vol+self.ivc_data.call_K_dict[k].impl_vol)/2. 
-			else:
-				ivcs[i] = self.ivc_data.call_K_dict[k].impl_vol
-
-		coeffs = np.polyfit(Ks, ivcs, 6)  # polynomial fit by degree of 6 
-		poly6  = np.poly1d(coeffs)
-		self.axes.set_xbound(lower = min(Ks), upper = max(Ks))
-		self.axes.set_ybound(lower=0., upper=max(ivcs))
+		self.fitIvc.poly_fit_ivc(degree_=5)
+		self.axes.set_xbound(lower = min(self.fitIvc.Ks), upper = max(self.fitIvc.Ks))
+		self.axes.set_ybound(lower=0., upper=max(self.fitIvc.ivs))
 		self.axes.grid(True, color='gray')
 		pylab.setp(self.axes.get_xticklabels(), visible=True)
-		self.plot_opt.set_xdata(Ks)
-		self.plot_opt.set_ydata(ivcs)
-		self.plot_fit.set_xdata(Ks)
-		self.plot_fit.set_ydata(poly6(Ks))
+		self.plot_opt.set_xdata(self.fitIvc.Ks)
+		self.plot_opt.set_ydata(self.fitIvc.ivs)
+		self.plot_fit.set_xdata(self.fitIvc.Ks)
+		self.plot_fit.set_ydata(self.fitIvc.fitted_ivs)
 		self.plot_K_line.set_xdata(np.ones(100)*self.ivc_data.S)
-		self.plot_K_line.set_ydata(np.arange(100)/100.*max(ivcs))
+		self.plot_K_line.set_ydata(np.arange(100)/100.*max(self.fitIvc.ivs))
 
 		self.canvas.draw()
 
@@ -167,66 +157,8 @@ class IVCFrame(wx.Frame):
 			self.ivc_data.val_date = int(self.valdate_txt_ctrl.GetValue())
 			self.ivc_data.r        = float(self.r_txt_ctrl.GetValue()) 
 			self.ivc_data.q        = float(self.q_txt_ctrl.GetValue())
-			self.cvrt_opt_ivc()
+			self.fitIvc.cvrtOpt2Ivc()
 			self.draw_ivc()
-
-	def cvrt_opt_ivc(self):
-		self.opt_data.fut_lock.acquire()
-		self.ivc_data.fut_exp_date = self.opt_data.fut_exp_date
-		if self.opt_data.fut_bid == 0. and self.opt_data.fut_ask == 0.: 
-			raise ValueError('Underlying futures price not available!')
-		num = 0	
-		if self.opt_data.fut_bid > 0.:
-			num += 1 
-		if self.opt_data.fut_ask > 0.: 
-			num += 1 
-		self.ivc_data.S = (self.opt_data.fut_bid + self.opt_data.fut_ask) / (num * 100.)
-		self.opt_data.fut_lock.release()
-
-		self.opt_data.opt_lock.acquire()
-		self.ivc_data.opt_exp_date = self.opt_data.opt_exp_date
-		self.ivc_data.put_K_dict   = self.cp_opt_ivc_data(self.opt_data.put_K_bid_dict, self.opt_data.put_K_ask_dict, cp_="PUT")
-		self.ivc_data.call_K_dict  = self.cp_opt_ivc_data(self.opt_data.call_K_bid_dict, self.opt_data.call_K_ask_dict, cp_="CALL")
-		self.opt_data.opt_lock.release()
-		for k in self.ivc_data.put_K_dict.keys(): 
-			self.calc_impl_vol(k, self.ivc_data.put_K_dict[k])
-		for k in self.ivc_data.call_K_dict.keys(): 
-			self.calc_impl_vol(k, self.ivc_data.call_K_dict[k])
-	
-	def calc_impl_vol(self, strike_, iv_):
-		opt = Option(ex_style_ = "AMERICAN", cp_type_ = iv_.cp_type, \
-					trade_date_ = self.ivc_data.val_date, exp_date_ = self.ivc_data.opt_exp_date, \
-					S_ = self.ivc_data.S, K_ = strike_, sigma_ = .0, r_ = self.ivc_data.r, \
-					q_ = self.ivc_data.q, price_impl_vol_ = iv_.price)
-		try: 
-			iv_.impl_vol = opt.calcImplVol()
-		except RuntimeError, e:
-			print "RuntimeError caught: ", e.message
-		except:
-			print "Unexpected error caught"
-		opt.print_out()
-		iv_.print_out()
-
-	def cp_opt_ivc_data(self, K_bid_dict_, K_ask_dict_, cp_=""):
-		Ks = sorted(set(list(K_bid_dict_.keys()) + list(K_ask_dict_.keys())))
-		num = 0
-		price = 0.
-		ts = 0
-		K_dict = {}
-		for k in Ks:
-			if k in K_bid_dict_.keys(): 
-				num += 1
-				price += K_bid_dict_[k].price
-				if K_bid_dict_[k].ts > ts:
-					ts = K_bid_dict_[k].ts
-			if k in K_ask_dict_.keys(): 
-				num += 1
-				price += K_ask_dict_[k].price
-				if K_ask_dict_[k].ts > ts:
-					ts = K_ask_dict_[k].ts
-			K_dict[k] = ImplVol(price_ = price/(num*100.), ts_ = ts, cp_type_ = cp_)
-		return K_dict
-
 
 	def on_exit(self, event):
 		self.Destroy()

@@ -58,9 +58,9 @@ class OptAttrParser:
 			exp_date = int(option.getElementsByTagName('ExpirationDate')[0].childNodes[0].nodeValue)
 			cp_type = option.getElementsByTagName('Type')[0].childNodes[0].nodeValue.upper()
 			ex_style = option.getElementsByTagName('ExerciseStyle')[0].childNodes[0].nodeValue.upper()
-			option_attr = OptAttr(oid, strike, exp_date, cp_type, ex_style)
-#			option_attr.print_out()
-			self.oid_dict[option_attr.oid] = option_attr
+			opt_attr = OptAttr(oid, strike, exp_date, cp_type, ex_style)
+#			opt_attr.print_out()
+			self.oid_dict[opt_attr.oid] = opt_attr
 			self.K_set.add(strike)
 
 if __name__ == "__main__":	
