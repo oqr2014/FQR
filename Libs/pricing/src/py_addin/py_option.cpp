@@ -27,6 +27,8 @@ scope Option_scope
 	.def("getStyleName", &Option::getStyleName)
     .add_property("ex_style", &Option::getStyle, &Option::setStyle) 
     .add_property("cp_type", &Option::getType, &Option::setType) 
+    .add_property("valueDate", &Option::getValueDate, &Option::setValueDate) 
+    .add_property("maturityDate", &Option::getMaturityDate, &Option::setMaturityDate) 
     .add_property("S", &Option::getSpot, &Option::setSpot) 
     .add_property("K", &Option::getStrike, &Option::setStrike) 
     .add_property("T", &Option::getT2M, &Option::setT2M) 

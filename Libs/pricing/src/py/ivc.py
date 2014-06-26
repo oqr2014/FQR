@@ -5,6 +5,7 @@
 import os
 import threading 
 import numpy as np
+#import liboqr_py as oqr
 from option import *
 
 # Implied volatility class 
@@ -84,7 +85,7 @@ class FitIvc(object):
 		return K_dict
 
 	def calc_impl_vol(self, strike_, iv_):
-		opt = Option(ex_style_ = "AMERICAN", cp_type_ = iv_.cp_type, \
+		opt = AmOption(cp_type_ = iv_.cp_type, \
 					trade_date_ = self.ivc_data.val_date, exp_date_ = self.ivc_data.opt_exp_date, \
 					S_ = self.ivc_data.S, K_ = strike_, sigma_ = 0., r_ = self.ivc_data.r, \
 					q_ = self.ivc_data.q, price_impl_vol_ = iv_.price)

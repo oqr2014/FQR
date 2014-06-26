@@ -5,104 +5,74 @@
 ###########################################################
 
 import os
-from liboqr_py import *
-from option_util import * 
+import liboqr_py as oqr
+import option_util as util
 
-class Option:
-	def __init__(self, ex_style_ = "", cp_type_ = "", trade_date_ = 0, exp_date_ = 0, \
+class AmOption(oqr.AmOption):
+	PCT_CHG_GREEKS = .001
+
+	def __init__(self, cp_type_ = "", trade_date_ = 0, exp_date_ = 0, \
 			T_ = 0., S_ = 0., K_ = 0., sigma_ = 0., r_ =0., q_ = 0., price_impl_vol_ = 0.): 
-		self.PCT_CHANGE_GREEKS = .001
-		self.ex_style   = ex_style_
-		self.cp_type    = cp_type_
-		self.trade_date = trade_date_   # int type in python 
-		self.exp_date   = exp_date_     # int type 
-		self.T          = T_
-		self.S          = S_ 
-		self.K          = K_
-		self.sigma      = sigma_
-		self.r          = r_
-		self.q          = q_
+		if trade_date_ != 0 and exp_date_ != 0:
+			oqr.AmOption.__init__(self, util.str2cp_type(cp_type_), util.str2qlDate(str(trade_date_)), \
+							util.str2qlDate(str(exp_date_)), S_, K_, sigma_, r_, q_) 
+		else:
+			oqr.AmOption.__init__(self, util.str2cp_type(cp_type_), S_, K_, T_, sigma_, r_, q_) 
+
 		self.price_impl_vol = price_impl_vol_
+		self.impl_vol       = .0
+		self.delta          = .0
+		self.vega           = .0
+		self.gamma          = .0
+		self.theta          = .0
+		self.rho            = .0 
 
-		self.option   = None
-		self.price    = 0. 
-		self.impl_vol = 0. 
-		self.delta    = 0.
-		self.vega     = 0. 
-		self.gamma    = 0.
-		self.theta    = 0. 
-		self.rho      = 0.
-
-		if self.ex_style == "EUROPEAN":
-			self.create_euro_option()
-		elif self.ex_style == "AMERICAN": 
-			self.create_am_option()
-		else: 
-			print "Error: excise style: ", self.ex_style, "invalid"
-			raise Exception("Option::__init__ failed")
-		self.T = self.option.T
-			
 	def setSigma(self, sigma_):
 		self.sigma = sigma_
-		self.option.sigma = sigma_
-
-	def create_euro_option(self):
-		if self.trade_date != 0 and self.exp_date != 0: 
-			self.option = EuroOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
-				str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
-		else:
-			self.option = EuroOption(str2call_put(self.cp_type), self.S, self.K, self.T, \
-				self.sigma, self.r, self.q) 
-
-	def create_am_option(self): 
-		if self.trade_date != 0 and self.exp_date != 0: 
-			self.option = AmOption(str2call_put(self.cp_type), str2qlDate(str(self.trade_date)), \
-				str2qlDate(str(self.exp_date)), self.S, self.K, self.sigma, self.r, self.q) 
-		else:
-			self.option = AmOption(str2call_put(self.cp_type), self.S, self.K, self.T, \
-				self.sigma, self.r, self.q) 
 
 	def print_out(self):
-		print "ex_style=", self.ex_style, "cp_type=", self.cp_type, "trade_date=", self.trade_date, \
-			"exp_date=", self.exp_date, "T=", self.T, "S=", self.S, "K=", self.K, \
-			"sigma=", self.sigma, "r=", self.r, "q=", self.q, \
+		print "ex_style=AMERICAN", "cp_type=", util.cp_type2str(self.cp_type), \
+			"trade_date=", util.qlDate2str(self.valueDate), "exp_date=", util.qlDate2str(self.maturityDate), \
+			"T=", self.T, "S=", self.S, "K=", self.K, "sigma=", self.sigma, "r=", self.r, "q=", self.q, \
 			"price_impl_vol=", self.price_impl_vol, "impl_vol=", self.impl_vol 
+	
+	def print_greeks(self): 
+		print "delta=%f gamma=%f vega=%f theta=%f rho=%f" %(self.delta, self.gamma, self.vega, self.theta, self.rho) 
 
 	def calcPrice(self): 
-		self.option.calcPrice()
-		self.price = self.option.price 
+		self.calcPrice()
 		return self.price 	
 
 	def calcImplVol(self, price_ = 0.):
 		if price_ <= 0.: 
-			self.impl_vol = self.option.calcImplVol(self.price_impl_vol)
+			self.impl_vol = super(AmOption, self).calcImplVol(self.price_impl_vol)
 		else:
-			self.impl_vol = self.option.calcImplVol(price_)
+			self.impl_vol = super(AmOption, self).calcImplVol(price_)
 		return self.impl_vol 
 
 	def calcDelta(self): 
-		self.option.calcDelta(self.PCT_CHANGE_GREEKS)
-		self.delta = self.option.greeks.delta
+		oqr.Option.calcDelta(self, self.PCT_CHG_GREEKS)
+		self.delta = self.greeks.delta
 		return self.delta
 
 	def calcVega(self): 
-		self.option.calcVega(self.PCT_CHANGE_GREEKS)
-		self.vega = self.option.greeks.vega
+		oqr.Option.calcVega(self, self.PCT_CHG_GREEKS)
+		self.vega = self.greeks.vega
 		return self.vega
 	
 	def calcGamma(self): 
-		self.option.calcGamma(self.PCT_CHANGE_GREEKS)
-		self.gamma = self.option.greeks.gamma
+		oqr.Option.calcGamma(self, self.PCT_CHG_GREEKS)
+		self.gamma = self.greeks.gamma
 		return self.gamma
 
 	def calcTheta(self): 
-		self.option.calcTheta(self.PCT_CHANGE_GREEKS)
-		self.theta = self.option.greeks.theta
+		oqr.Option.calcTheta(self, self.PCT_CHG_GREEKS)
+		self.theta = self.greeks.theta
 		return self.theta
 
 	def calcRho(self): 
-		self.option.calcRho(self.PCT_CHANGE_GREEKS)
-		self.rho = self.option.greeks.rho
+		oqr.Option.calcRho(self, self.PCT_CHG_GREEKS)
+		self.rho = self.greeks.rho
 		return self.rho
 
 if __name__ == "__main__": 
@@ -113,11 +83,16 @@ if __name__ == "__main__":
 #	option1.print_out()
 #	print "price=", option1.price, "impl_vol=", option1.impl_vol 
 
-	option2 = Option(ex_style_ = "AMERICAN", cp_type_ = "PUT", \
-		trade_date_ = 20140301, exp_date_ = 20140321, \
-		S_ = 1870.875, K_ = 1865., sigma_ = .0, r_ = .01, q_ = .01, price_impl_vol_ = 1.4121) 
+	option2 = AmOption(cp_type_ = "CALL", trade_date_ = 20140301, exp_date_ = 20140321, \
+			S_ = 1866., K_ = 1865., sigma_ = .0, r_ = .00155, q_ = .00155, price_impl_vol_ = 11.121) 
 	iv = option2.calcImplVol() 
+	option2.setSigma(iv)
+	option2.calcDelta() 
+	option2.calcVega() 
+	option2.calcGamma() 
+	option2.calcTheta() 
+	option2.calcRho() 
 	print "#############IV=", iv
 	option2.print_out()
-	print "price_impl_vol=", option2.price_impl_vol, "impl_vol=", option2.impl_vol 
+	option2.print_greeks()
 

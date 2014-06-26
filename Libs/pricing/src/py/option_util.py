@@ -4,59 +4,105 @@
 ##################################################
 
 import os
-from liboqr_py import * 
+import liboqr_py as oqr 
 from datetime import datetime 
 
 def int2Month(i_): 
 	if i_ == 1:  
-		return Month.Jan
+		return oqr.Month.Jan
 	elif i_ == 2:
-		return Month.Feb
+		return oqr.Month.Feb
 	elif i_ == 3:
-		return Month.Mar
+		return oqr.Month.Mar
 	elif i_ == 4: 
-		return Month.Apr
+		return oqr.Month.Apr
 	elif i_ == 5: 
-		return Month.May
+		return oqr.Month.May
 	elif i_ == 6:
-		return Month.Jun
+		return oqr.Month.Jun
 	elif i_ == 7:
-		return Month.Jul
+		return oqr.Month.Jul
 	elif i_ == 8: 
-		return Month.Aug
+		return oqr.Month.Aug
 	elif i_ == 9: 
-		return Month.Sep
+		return oqr.Month.Sep
 	elif i_ == 10: 
-		return Month.Oct
+		return oqr.Month.Oct
 	elif i_ == 11: 
-		return Month.Nov
+		return oqr.Month.Nov
 	elif i_ == 12: 
-		return Month.Dec
+		return oqr.Month.Dec
 	else: 
 		print "invalid Month:", i_
 		raise Exception("Error: int2Month failed")
 
-def str2call_put(str_): 
+def month2Int(month_): 
+	if month_ == oqr.Month.Jan:  
+		return 1
+	elif month_ == oqr.Month.Feb:
+		return 2
+	elif month_ == oqr.Month.Mar:
+		return 3
+	elif month_ == oqr.Month.Apr: 
+		return 4
+	elif month_ == oqr.Month.May: 
+		return 5
+	elif month_ == oqr.Month.Jun:
+		return 6
+	elif month_ == oqr.Month.Jul:
+		return 7
+	elif month_ == oqr.Month.Aug: 
+		return 8
+	elif month_ == oqr.Month.Sep: 
+		return 9
+	elif month_ == oqr.Month.Oct: 
+		return 10
+	elif month_ == oqr.Month.Nov: 
+		return 11
+	elif month_ == oqr.Month.Dec: 
+		return 12
+	else: 
+		print "invalid Month:", month_
+		raise Exception("Error: month2Int failed")
+
+def str2cp_type(str_): 
 	if str_ == "PUT": 
-		return Option.Type.PUT
+		return oqr.Option.Type.PUT
 	elif str_ == "CALL": 
-		return Option.Type.CALL
+		return oqr.Option.Type.CALL
 	else:
 		print "invalid call/put type:", str_
-		raise Exception("Error: str2call_put failed")
+		raise Exception("Error: str2cp_type failed")
+
+def cp_type2str(type_): 
+	if type_ == oqr.Option.Type.PUT:
+		return "PUT"
+	elif type_ == oqr.Option.Type.CALL: 
+		return "CALL"
+	else:
+		print "invalid call/put type:", type_
+		raise Exception("Error: cp_type2str failed")
 
 def str2qlDate(str_, format_="%Y%m%d"): 
 	#default format: YYYYMMDD e.g. 20140321
 	d1 = datetime.strptime(str_, format_)
-	return Date(d1.day, int2Month(d1.month), d1.year)
+	return oqr.Date(d1.day, int2Month(d1.month), d1.year)
 	
+def qlDate2str(date_):
+#string format: YYYYMMDD e.g. 20140321
+	ss = str(date_.year()).zfill(4) + str(month2Int(date_.month())).zfill(2) + str(date_.dayOfMonth()).zfill(2)
+	return ss
 
 if __name__ == "__main__": 
-	m = int2Month(10)
-	print m
-	t = str2call_put("CALL")
-	print t 
-	d = str2qlDate("03/1/2014")
+	print int2Month(10)
+	print month2Int(oqr.Month.Oct)
+
+	print str2cp_type("CALL")
+	print cp_type2str(oqr.Option.Type.CALL)
+
+	d = str2qlDate("20140624")
 	print "day=", d.dayOfMonth(), "month=", d.month(), "year=", d.year()
+	ss = qlDate2str(d)
+	print "date string=", ss
 
 
