@@ -34,13 +34,13 @@ class AmOption(oqr.AmOption):
 		print "ex_style=AMERICAN", "cp_type=", util.cp_type2str(self.cp_type), \
 			"trade_date=", util.qlDate2str(self.valueDate), "exp_date=", util.qlDate2str(self.maturityDate), \
 			"T=", self.T, "S=", self.S, "K=", self.K, "sigma=", self.sigma, "r=", self.r, "q=", self.q, \
-			"price_impl_vol=", self.price_impl_vol, "impl_vol=", self.impl_vol 
+			"price=", self.price, "price_impl_vol=", self.price_impl_vol, "impl_vol=", self.impl_vol 
 	
 	def print_greeks(self): 
 		print "delta=%f gamma=%f vega=%f theta=%f rho=%f" %(self.delta, self.gamma, self.vega, self.theta, self.rho) 
 
 	def calcPrice(self): 
-		self.calcPrice()
+		super(AmOption, self).calcPrice()
 		return self.price 	
 
 	def calcImplVol(self, price_ = 0.):
@@ -85,6 +85,7 @@ if __name__ == "__main__":
 
 	option2 = AmOption(cp_type_ = "CALL", trade_date_ = 20140301, exp_date_ = 20140321, \
 			S_ = 1866., K_ = 1865., sigma_ = .0, r_ = .00155, q_ = .00155, price_impl_vol_ = 11.121) 
+	option2.print_out()
 	iv = option2.calcImplVol() 
 	option2.setSigma(iv)
 	option2.calcDelta() 
@@ -93,6 +94,7 @@ if __name__ == "__main__":
 	option2.calcTheta() 
 	option2.calcRho() 
 	print "#############IV=", iv
+	option2.calcPrice()
 	option2.print_out()
 	option2.print_greeks()
 

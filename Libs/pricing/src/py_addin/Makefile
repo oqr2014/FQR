@@ -12,15 +12,9 @@ DBG_OBJS      = \
 	$(DBG_DLODIR)/py_am_option.o  \
 	$(DBG_DLODIR)/py_utility.o  \
 
-REL_DLODIR     = ./release
-REL_DLONAME    = liboqr_py.so  
-REL_OBJS      = \
-	$(REL_DLODIR)/py_export.o  \
-	$(REL_DLODIR)/py_greeks.o  \
-	$(DBG_DLODIR)/py_option.o  \
-	$(DBG_DLODIR)/py_euro_option.o  \
-	$(REL_DLODIR)/py_am_option.o  \
-	$(REL_DLODIR)/py_utility.o  \
+REL_DLODIR  = ./release
+REL_DLONAME = liboqr_py.so  
+REL_OBJS    = $(subst $(DBG_DLODIR), $(REL_DLODIR), $(DBG_OBJS))
 
 INC       = -I/usr/include -I/usr/include/python2.7
 DBG_CPPFLAGS  = -g -ggdb -DDEBUG -pthread -fPIC $(INC)
